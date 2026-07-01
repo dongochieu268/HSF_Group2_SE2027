@@ -9,7 +9,7 @@
             <h1 th:text="${job.title}"></h1>
             <p th:text="${job.description}"></p></div>
         <div class="actions"
-             th:if="${session.loggedInUser.roleName == 'ADMIN' or session.loggedInUser.roleName == 'RECRUITER'}"><a
+             th:if="${session.loggedInUser != null and (session.loggedInUser.roleName == 'ADMIN' or session.loggedInUser.roleName == 'RECRUITER')}"><a
                 class="button button-secondary" th:href="@{/jobs/{id}/edit(id=${job.id})}">Chỉnh sửa</a>
             <form th:if="${job.status.name() == 'OPEN'}" th:action="@{/jobs/{id}/close(id=${job.id})}" method="post">
                 <button class="button button-secondary" type="submit">Đóng tin</button>
