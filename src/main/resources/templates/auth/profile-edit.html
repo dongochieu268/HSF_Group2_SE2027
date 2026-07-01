@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/base :: head('Chỉnh sửa hồ sơ')}"></head>
+<body>
+<header th:replace="~{layout/base :: header}"></header>
+<main class="container page-content">
+    <div class="page-heading"><p class="eyebrow">Tài khoản</p><h1>Chỉnh sửa hồ sơ</h1><p>Cập nhật họ tên và email hiển thị trên tài khoản của bạn.</p></div>
+    <form class="form-panel" th:action="@{/profile/edit}" th:object="${updateProfileForm}" method="post">
+        <div class="alert alert-error" th:if="${profileError}" th:text="${profileError}"></div>
+        <div class="form-group">
+            <label for="fullName">Họ và tên</label>
+            <input class="form-control" id="fullName" type="text" th:field="*{fullName}" autocomplete="name">
+            <span class="field-error" th:errors="*{fullName}"></span>
+        </div>
+        <div class="form-group">
+            <label for="email">Email</label>
+            <input class="form-control" id="email" type="email" th:field="*{email}" autocomplete="email">
+            <span class="field-error" th:errors="*{email}"></span>
+        </div>
+        <button class="button" type="submit">Lưu thay đổi</button>
+        <a class="button button-secondary" th:href="@{/profile}">Hủy</a>
+    </form>
+</main>
+<footer th:replace="~{layout/base :: footer}"></footer>
+</body>
+</html>

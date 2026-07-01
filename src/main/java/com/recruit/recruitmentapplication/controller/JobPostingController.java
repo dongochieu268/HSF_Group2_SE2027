@@ -30,7 +30,7 @@ public class JobPostingController {
 
     @GetMapping("/{id}")
     public String detail(@PathVariable Long id, Model model) {
-        model.addAttribute("job", jobPostingService.findById(id));
+        model.addAttribute("job", jobPostingService.findPublicDetail(id));
         return "jobposting/detail";
     }
 

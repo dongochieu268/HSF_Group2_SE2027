@@ -38,6 +38,12 @@ public class JobPostingService {
     }
 
     @Transactional(readOnly = true)
+    public JobPosting findPublicDetail(Long id) {
+        return jobPostingRepository.findByIdWithDetails(id)
+                .orElseThrow(() -> notFound(id));
+    }
+
+    @Transactional(readOnly = true)
     public List<JobPosting> findByCompany(Long companyId) {
         return jobPostingRepository.findByCompany_Id(companyId);
     }

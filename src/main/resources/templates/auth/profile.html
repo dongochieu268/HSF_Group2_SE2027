@@ -6,6 +6,7 @@
 <main class="container page-content">
     <div class="page-heading"><p class="eyebrow">Tài khoản</p><h1>Tài khoản của tôi</h1><p>Thông tin đăng nhập và bảo mật tài khoản.</p></div>
     <div class="alert alert-success" th:if="${param.passwordChanged != null}">Đổi mật khẩu thành công.</div>
+    <div class="alert alert-success" th:if="${param.updated != null}">Cập nhật hồ sơ thành công.</div>
     <section class="detail-panel">
         <dl class="detail-grid">
             <div><dt>Họ và tên</dt><dd th:text="${user.fullName}">Nguyễn Văn A</dd></div>
@@ -15,7 +16,8 @@
         </dl>
     </section>
     <div class="actions">
-        <a class="button" th:href="@{/profile/password}">Đổi mật khẩu</a>
+        <a class="button" th:href="@{/profile/edit}">Chỉnh sửa hồ sơ</a>
+        <a class="button button-secondary" th:href="@{/profile/password}">Đổi mật khẩu</a>
         <a class="button button-secondary" th:href="@{/auth/logout}">Đăng xuất</a>
     </div>
 </main>

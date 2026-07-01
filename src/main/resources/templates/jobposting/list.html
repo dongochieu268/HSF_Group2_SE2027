@@ -9,7 +9,7 @@
             <h1>Việc làm đang tuyển</h1>
             <p>Tìm cơ hội theo tiêu đề và xem thông tin công ty.</p></div>
         <a class="button"
-           th:if="${session.loggedInUser.roleName == 'ADMIN' or session.loggedInUser.roleName == 'RECRUITER'}"
+           th:if="${session.loggedInUser != null and (session.loggedInUser.roleName == 'ADMIN' or session.loggedInUser.roleName == 'RECRUITER')}"
            th:href="@{/jobs/new}">Đăng tin mới</a></div>
     <form class="search-row" th:action="@{/jobs}" method="get"><input class="form-control" name="keyword"
                                                                       th:value="${keyword}"
