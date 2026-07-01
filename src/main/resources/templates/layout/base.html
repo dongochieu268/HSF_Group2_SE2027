@@ -17,21 +17,12 @@
             <a th:if="${session.loggedInUser != null and session.loggedInUser.roleName == 'CANDIDATE'}" th:href="@{/candidates/me}">Hồ sơ của tôi</a>
             <a th:if="${session.loggedInUser != null and (session.loggedInUser.roleName == 'ADMIN' or session.loggedInUser.roleName == 'RECRUITER')}" th:href="@{/candidates}">Ứng viên</a>
             <a th:if="${session.loggedInUser?.roleName == 'ADMIN'}" th:href="@{/admin/users}">Quản lý người dùng</a>
+            <a th:if="${session.loggedInUser != null}" th:href="@{/profile}">Tài khoản</a>
+            <span class="session-user" th:if="${session.loggedInUser != null}"
+                  th:text="${session.loggedInUser.fullName}">Người dùng</span>
             <a th:if="${session.loggedInUser == null}" th:href="@{/auth/login}">Đăng nhập</a>
+            <a th:if="${session.loggedInUser != null}" th:href="@{/auth/logout}">Đăng xuất</a>
         </nav>
-        <details class="user-menu" th:if="${session.loggedInUser != null}">
-            <summary class="user-menu-trigger">
-                <span class="user-avatar" th:text="${#strings.substring(session.loggedInUser.fullName, 0, 1)}">N</span>
-                <span class="session-user" th:text="${session.loggedInUser.fullName}">Người dùng</span>
-            </summary>
-            <div class="user-menu-panel">
-                <p class="user-menu-role" th:text="${session.loggedInUser.roleName}">CANDIDATE</p>
-                <a th:href="@{/profile}">Tài khoản của tôi</a>
-                <a th:href="@{/profile/edit}">Chỉnh sửa hồ sơ</a>
-                <a th:href="@{/profile/password}">Đổi mật khẩu</a>
-                <a th:href="@{/auth/logout}">Đăng xuất</a>
-            </div>
-        </details>
     </div>
 </header>
 

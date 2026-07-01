@@ -2,8 +2,6 @@ package com.recruit.recruitmentapplication.controller;
 
 import com.recruit.recruitmentapplication.dto.ChangePasswordForm;
 import com.recruit.recruitmentapplication.dto.SessionUser;
-import com.recruit.recruitmentapplication.dto.UpdateProfileForm;
-import com.recruit.recruitmentapplication.entity.User;
 import com.recruit.recruitmentapplication.service.UserService;
 import com.recruit.recruitmentapplication.util.SessionConstants;
 import jakarta.servlet.http.HttpSession;
@@ -27,29 +25,6 @@ public class AccountController {
     public String profile(HttpSession session, Model model) {
         model.addAttribute("user", userService.findById(current(session).getId()));
         return "auth/profile";
-    }
-
-    @GetMapping("/profile/edit")
-    public String editProfileForm(HttpSession session, Model model) {
-        User user = userService.findById(current(session).getId());
-        model.addAttribute("updateProfileForm", new UpdateProfileForm(user.getFullName(), user.getEmail()));
-        return "auth/profile-edit";
-    }
-
-    @PostMapping("/profile/edit")
-    public String updateProfile(@Valid @ModelAttribute("updateProfileForm") UpdateProfileForm form,
-                                BindingResult result, HttpSession session, Model model) {
-        if (result.hasErrors()) {
-            return "auth/profile-edit";
-        }
-        try {
-            User updated = userService.updateProfile(current(session).getId(), form);
-            session.setAttribute(SessionConstants.LOGGED_IN_USER, SessionUser.from(updated));
-            return "redirect:/profile?updated=true";
-        } catch (IllegalArgumentException ex) {
-            model.addAttribute("profileError", ex.getMessage());
-            return "auth/profile-edit";
-        }
     }
 
     @GetMapping("/profile/password")

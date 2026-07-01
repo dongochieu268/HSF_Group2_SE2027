@@ -2,7 +2,6 @@ package com.recruit.recruitmentapplication.service;
 
 import com.recruit.recruitmentapplication.dto.ChangePasswordForm;
 import com.recruit.recruitmentapplication.dto.RegisterForm;
-import com.recruit.recruitmentapplication.dto.UpdateProfileForm;
 import com.recruit.recruitmentapplication.entity.Role;
 import com.recruit.recruitmentapplication.entity.User;
 import com.recruit.recruitmentapplication.repository.RoleRepository;
@@ -81,20 +80,6 @@ public class UserService {
         Role role = roleRepository.findByName(roleName)
                 .orElseThrow(() -> new IllegalArgumentException("Vai trò không hợp lệ"));
         user.setRole(role);
-        return userRepository.save(user);
-    }
-
-    @Transactional
-    public User updateProfile(Long userId, UpdateProfileForm form) {
-        User user = findById(userId);
-        String newEmail = form.getEmail().trim().toLowerCase();
-
-        if (!newEmail.equalsIgnoreCase(user.getEmail()) && userRepository.existsByEmail(newEmail)) {
-            throw new IllegalArgumentException("Email đã được sử dụng bởi tài khoản khác");
-        }
-
-        user.setFullName(form.getFullName().trim());
-        user.setEmail(newEmail);
         return userRepository.save(user);
     }
 
