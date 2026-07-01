@@ -94,4 +94,23 @@ public class UserService {
         User user = findById(userId);
         userRepository.delete(user);
     }
+
+    @Transactional
+    public void changePassword(Long userId, String currentPassword, String newPassword) {
+        User user = findById(userId);
+
+        // Check 1: Current password incorrect
+        if (!passwordUtil.matches(currentPassword, user.getPassword())) {
+            throw new IllegalArgumentException("Incorrect current password.");
+        }
+
+        // Check 2: New password same as current
+        if (passwordUtil.matches(newPassword, user.getPassword())) {
+            throw new IllegalArgumentException("New password must be different from your current password.");
+        }
+
+        // Update password
+        user.setPassword(passwordUtil.hash(newPassword));
+        userRepository.save(user);
+    }
 }

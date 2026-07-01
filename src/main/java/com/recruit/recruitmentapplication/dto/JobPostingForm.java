@@ -1,10 +1,8 @@
 package com.recruit.recruitmentapplication.dto;
 
 import com.recruit.recruitmentapplication.entity.JobPosting;
-import jakarta.validation.constraints.DecimalMin;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.HashSet;
@@ -25,6 +23,8 @@ public class JobPostingForm {
     private BigDecimal salaryMin;
     @DecimalMin(value = "0", message = "Lương tối đa không được âm")
     private BigDecimal salaryMax;
+    // Validate hạn nộp phải là ngày hôm nay hoặc tương lai
+    @FutureOrPresent(message = "Application deadline must be a future date.")
     private LocalDate deadline;
     @NotNull(message = "Vui lòng chọn công ty")
     private Long companyId;
