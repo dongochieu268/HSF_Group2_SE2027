@@ -8,6 +8,7 @@
     <form class="form-panel" th:action="@{/auth/login}" th:object="${loginForm}" method="post">
         <div class="alert alert-success" th:if="${param.registered != null}">Đăng ký thành công. Bạn có thể đăng nhập.</div>
         <div class="alert alert-success" th:if="${param.logout != null}">Bạn đã đăng xuất.</div>
+        <div class="alert alert-success" th:if="${param.reset != null}">Password updated - please sign in with your new password.</div>
         <div class="alert alert-error" th:if="${loginError}" th:text="${loginError}"></div>
         <div class="form-group">
             <label for="username">Tên đăng nhập</label>
@@ -18,6 +19,9 @@
             <label for="password">Mật khẩu</label>
             <input class="form-control" id="password" type="password" th:field="*{password}" autocomplete="current-password">
             <span class="field-error" th:errors="*{password}"></span>
+        </div>
+        <div class="form-group">
+            <a class="text-link" th:href="@{/auth/password-reset/request}">Forgot password?</a>
         </div>
         <button class="button" type="submit">Đăng nhập</button>
         <a class="button button-secondary" th:href="@{/auth/register}">Tạo tài khoản</a>
