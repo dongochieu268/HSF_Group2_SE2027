@@ -7,6 +7,8 @@
     <div class="page-heading heading-row">
         <div><p class="eyebrow" th:text="${job.company.name}"></p>
             <h1 th:text="${job.title}"></h1>
+            <span class="badge" th:classappend="${job.status.name() != 'OPEN'} ? ' badge-disabled'"
+                  th:text="${job.status}"></span>
             <p th:text="${job.description}"></p></div>
         <div class="actions"
              th:if="${session.loggedInUser != null and (session.loggedInUser.roleName == 'ADMIN' or session.loggedInUser.roleName == 'RECRUITER')}"><a
@@ -27,10 +29,6 @@
                 <dd th:text="${job.company.name}"></dd>
             </div>
             <div>
-                <dt>Trạng thái</dt>
-                <dd th:text="${job.status}"></dd>
-            </div>
-            <div>
                 <dt>Loại việc</dt>
                 <dd th:text="${job.jobType}"></dd>
             </div>
@@ -39,12 +37,8 @@
                 <dd th:text="${job.location ?: '-'}"></dd>
             </div>
             <div>
-                <dt>Lương tối thiểu</dt>
-                <dd th:text="${job.salaryMin ?: '-'}"></dd>
-            </div>
-            <div>
-                <dt>Lương tối đa</dt>
-                <dd th:text="${job.salaryMax ?: '-'}"></dd>
+                <dt>Mức lương</dt>
+                <dd th:text="${(job.salaryMin != null ? job.salaryMin : '-') + ' - ' + (job.salaryMax != null ? job.salaryMax : '-')}"></dd>
             </div>
             <div>
                 <dt>Ngày đăng</dt>
@@ -55,6 +49,11 @@
                 <dd th:text="${job.deadline ?: '-'}"></dd>
             </div>
         </dl>
+        <p class="muted">Kỹ năng yêu cầu</p>
+        <div class="skill-list">
+            <p class="muted" th:if="${#sets.isEmpty(job.requiredSkills)}">Chưa cập nhật kỹ năng yêu cầu.</p>
+            <span class="badge skill-badge" th:each="s : ${job.requiredSkills}" th:text="${s.name}"></span>
+        </div>
     </section>
     <a class="text-link" th:href="@{/jobs}">Quay lại danh sách</a></main>
 <footer th:replace="~{layout/base :: footer}"></footer>

@@ -53,6 +53,10 @@ public interface JobPostingRepository extends JpaRepository<JobPosting, Long> {
     @Query("SELECT jp FROM JobPosting jp JOIN FETCH jp.company WHERE jp.id = :id")
     Optional<JobPosting> findByIdWithCompany(@Param("id") Long id);
 
+    @Query("SELECT DISTINCT jp FROM JobPosting jp JOIN FETCH jp.company "
+            + "LEFT JOIN FETCH jp.requiredSkills WHERE jp.id = :id")
+    Optional<JobPosting> findByIdWithDetails(@Param("id") Long id);
+
     @Query("SELECT DISTINCT jp FROM JobPosting jp LEFT JOIN FETCH jp.requiredSkills ORDER BY jp.id")
     List<JobPosting> findAllWithRequiredSkills();
 
