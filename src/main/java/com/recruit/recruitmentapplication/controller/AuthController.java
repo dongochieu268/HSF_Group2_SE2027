@@ -38,6 +38,14 @@ public class AuthController {
         if (result.hasErrors()) {
             return "auth/register";
         }
+        if (form.getConfirmPassword() == null || form.getConfirmPassword().isBlank()) {
+            result.rejectValue("confirmPassword", "confirmPassword.required", "Vui lòng xác nhận mật khẩu");
+            return "auth/register";
+        }
+        if (!form.getPassword().equals(form.getConfirmPassword())) {
+            result.rejectValue("confirmPassword", "confirmPassword.mismatch", "Mật khẩu xác nhận không khớp");
+            return "auth/register";
+        }
         try {
             userService.register(form);
             return "redirect:/auth/login?registered=true";
