@@ -1,5 +1,6 @@
 package com.recruit.recruitmentapplication.service;
 
+import com.recruit.recruitmentapplication.dto.ChangePasswordForm;
 import com.recruit.recruitmentapplication.dto.RegisterForm;
 import com.recruit.recruitmentapplication.entity.Role;
 import com.recruit.recruitmentapplication.entity.User;
@@ -79,6 +80,24 @@ public class UserService {
         Role role = roleRepository.findByName(roleName)
                 .orElseThrow(() -> new IllegalArgumentException("Vai trò không hợp lệ"));
         user.setRole(role);
+        return userRepository.save(user);
+    }
+
+    @Transactional
+    public User changePassword(Long userId, ChangePasswordForm form) {
+        User user = findById(userId);
+
+        if (!passwordUtil.matches(form.getCurrentPassword(), user.getPassword())) {
+            throw new IllegalArgumentException("Mật khẩu hiện tại không đúng");
+        }
+        if (!form.getNewPassword().equals(form.getConfirmNewPassword())) {
+            throw new IllegalArgumentException("Mật khẩu xác nhận không khớp");
+        }
+        if (passwordUtil.matches(form.getNewPassword(), user.getPassword())) {
+            throw new IllegalArgumentException("Mật khẩu mới phải khác mật khẩu hiện tại");
+        }
+
+        user.setPassword(passwordUtil.hash(form.getNewPassword()));
         return userRepository.save(user);
     }
 
