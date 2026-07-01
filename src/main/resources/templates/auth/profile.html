@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/base :: head('Tài khoản của tôi')}"></head>
+<body>
+<header th:replace="~{layout/base :: header}"></header>
+<main class="container page-content">
+    <div class="page-heading"><p class="eyebrow">Tài khoản</p><h1>Tài khoản của tôi</h1><p>Thông tin đăng nhập và bảo mật tài khoản.</p></div>
+    <div class="alert alert-success" th:if="${param.passwordChanged != null}">Đổi mật khẩu thành công.</div>
+    <section class="detail-panel">
+        <dl class="detail-grid">
+            <div><dt>Họ và tên</dt><dd th:text="${user.fullName}">Nguyễn Văn A</dd></div>
+            <div><dt>Tên đăng nhập</dt><dd th:text="${user.username}">username</dd></div>
+            <div><dt>Email</dt><dd th:text="${user.email}">user@example.com</dd></div>
+            <div><dt>Vai trò</dt><dd><span class="badge" th:text="${user.role.name}">CANDIDATE</span></dd></div>
+        </dl>
+    </section>
+    <div class="actions">
+        <a class="button" th:href="@{/profile/password}">Đổi mật khẩu</a>
+        <a class="button button-secondary" th:href="@{/auth/logout}">Đăng xuất</a>
+    </div>
+</main>
+<footer th:replace="~{layout/base :: footer}"></footer>
+</body>
+</html>
