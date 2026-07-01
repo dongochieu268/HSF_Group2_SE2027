@@ -19,6 +19,10 @@ public class AuthInterceptor implements HandlerInterceptor {
                 ? null
                 : (SessionUser) session.getAttribute(SessionConstants.LOGGED_IN_USER);
 
+        if (loggedInUser == null && isPublicJobReadRequest(request)) {
+            return true;
+        }
+
         if (loggedInUser == null) {
             response.sendRedirect(request.getContextPath() + "/auth/login");
             return false;
@@ -66,6 +70,14 @@ public class AuthInterceptor implements HandlerInterceptor {
         if (!path.startsWith("/jobs")) return false;
         if (!"GET".equalsIgnoreCase(request.getMethod())) return true;
         return "/jobs/new".equals(path) || (path.startsWith("/jobs/") && path.endsWith("/edit"));
+    }
+
+    private boolean isPublicJobReadRequest(HttpServletRequest request) {
+        if (!"GET".equalsIgnoreCase(request.getMethod())) {
+            return false;
+        }
+        String path = request.getRequestURI().substring(request.getContextPath().length());
+        return "/jobs".equals(path) || path.matches("/jobs/\\d+");
     }
 
     private boolean isCandidateAccessDenied(HttpServletRequest request, SessionUser user) {
