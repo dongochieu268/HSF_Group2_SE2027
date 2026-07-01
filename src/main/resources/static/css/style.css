@@ -19,8 +19,9 @@ nav { display: flex; flex-wrap: wrap; gap: 18px; }
 nav a { color: var(--muted); text-decoration: none; }
 nav a:hover { color: var(--brand); }
 .session-user { color: var(--ink); font-weight: 700; }
+.user-avatar { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; background: var(--brand); color: #fff; font-size: 12px; font-weight: 700; text-transform: uppercase; }
 .user-menu { position: relative; }
-.user-menu-trigger { display: flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 6px; list-style: none; cursor: pointer; }
+.user-menu-trigger { display: flex; align-items: center; gap: 8px; padding: 6px 10px; border-radius: 6px; list-style: none; cursor: pointer; }
 .user-menu-trigger::-webkit-details-marker { display: none; }
 .user-menu-trigger::after { content: "▾"; color: var(--muted); font-size: 12px; }
 .user-menu[open] > .user-menu-trigger { background: var(--soft); }
@@ -70,6 +71,10 @@ th { background: #eef2f7; font-size: 14px; }
 .detail-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 22px; margin: 0; }
 .detail-grid dt { color: var(--muted); font-size: 13px; font-weight: 700; text-transform: uppercase; }
 .detail-grid dd { margin: 5px 0 0; font-weight: 700; }
+.profile-summary { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; }
+.profile-summary .user-avatar { width: 56px; height: 56px; font-size: 22px; }
+.profile-summary h2 { margin: 0; font-size: 20px; }
+.profile-summary p { margin: 2px 0 0; color: var(--muted); font-size: 13px; }
 .text-link { color: var(--brand); font-weight: 700; }
 .empty-cell { padding: 28px; color: var(--muted); text-align: center; }
 .actions form { margin: 0; }
