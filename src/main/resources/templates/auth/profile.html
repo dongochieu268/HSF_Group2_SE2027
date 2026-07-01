@@ -6,16 +6,30 @@
 <main class="container page-content">
     <div class="page-heading"><p class="eyebrow">Tài khoản</p><h1>Tài khoản của tôi</h1><p>Thông tin đăng nhập và bảo mật tài khoản.</p></div>
     <div class="alert alert-success" th:if="${param.passwordChanged != null}">Đổi mật khẩu thành công.</div>
+    <div class="alert alert-success" th:if="${param.updated != null}">Cập nhật hồ sơ thành công.</div>
     <section class="detail-panel">
+        <div class="profile-summary">
+            <span class="user-avatar" th:text="${#strings.substring(user.fullName, 0, 1)}">N</span>
+            <div>
+                <h2 th:text="${user.fullName}">Nguyễn Văn A</h2>
+                <p>@<span th:text="${user.username}">username</span></p>
+            </div>
+        </div>
         <dl class="detail-grid">
-            <div><dt>Họ và tên</dt><dd th:text="${user.fullName}">Nguyễn Văn A</dd></div>
-            <div><dt>Tên đăng nhập</dt><dd th:text="${user.username}">username</dd></div>
             <div><dt>Email</dt><dd th:text="${user.email}">user@example.com</dd></div>
             <div><dt>Vai trò</dt><dd><span class="badge" th:text="${user.role.name}">CANDIDATE</span></dd></div>
+            <div><dt>Trạng thái</dt>
+                <dd>
+                    <span class="badge" th:if="${user.enabled}">Đang hoạt động</span>
+                    <span class="badge badge-disabled" th:unless="${user.enabled}">Đã khóa</span>
+                </dd>
+            </div>
+            <div><dt>Ngày tham gia</dt><dd th:text="${#temporals.format(user.createdAt, 'dd/MM/yyyy')}">01/01/2025</dd></div>
         </dl>
     </section>
     <div class="actions">
-        <a class="button" th:href="@{/profile/password}">Đổi mật khẩu</a>
+        <a class="button" th:href="@{/profile/edit}">Chỉnh sửa hồ sơ</a>
+        <a class="button button-secondary" th:href="@{/profile/password}">Đổi mật khẩu</a>
         <a class="button button-secondary" th:href="@{/auth/logout}">Đăng xuất</a>
     </div>
 </main>
