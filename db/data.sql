@@ -2,15 +2,16 @@ SET IDENTITY_INSERT dbo.roles ON;
 IF NOT EXISTS (SELECT 1 FROM dbo.roles WHERE id = 1) INSERT INTO dbo.roles (id, name) VALUES (1, N'ADMIN');
 IF NOT EXISTS (SELECT 1 FROM dbo.roles WHERE id = 2) INSERT INTO dbo.roles (id, name) VALUES (2, N'RECRUITER');
 IF NOT EXISTS (SELECT 1 FROM dbo.roles WHERE id = 3) INSERT INTO dbo.roles (id, name) VALUES (3, N'CANDIDATE');
+IF NOT EXISTS (SELECT 1 FROM dbo.roles WHERE id = 4) INSERT INTO dbo.roles (id, name) VALUES (4, N'INTERVIEWER');
 SET IDENTITY_INSERT dbo.roles OFF;
 
 SET IDENTITY_INSERT dbo.users ON;
-IF NOT EXISTS (SELECT 1 FROM dbo.users WHERE id = 1) INSERT INTO dbo.users (id, username, password, email, full_name, enabled, created_at, role_id) VALUES (1, N'admin', N'$2a$10$GMxGu.0KX.u1gG5H5RrTj.cTzwQfaqGiEuyHWreaRr0A.IHEenilS', N'admin@recruit.com', N'System Administrator', 1, '2026-07-01T09:00:00', 1);
-IF NOT EXISTS (SELECT 1 FROM dbo.users WHERE id = 2) INSERT INTO dbo.users (id, username, password, email, full_name, enabled, created_at, role_id) VALUES (2, N'recruiter', N'$2a$10$r7MkMz1PXe3JEz.USSGYn.ApIs.rI6yVROPRKLZUxMJC9n/QHx4cG', N'recruiter@recruit.com', N'Recruitment Manager', 1, '2026-07-01T09:01:00', 2);
-IF NOT EXISTS (SELECT 1 FROM dbo.users WHERE id = 3) INSERT INTO dbo.users (id, username, password, email, full_name, enabled, created_at, role_id) VALUES (3, N'alice', N'$2a$10$lrhTGzM3Lvp31lKh.89E5eNQ1ex1gErHRQuRiznLnywfLSNlsIxxG', N'alice@example.com', N'Alice Nguyen', 1, '2026-07-01T09:02:00', 3);
-IF NOT EXISTS (SELECT 1 FROM dbo.users WHERE id = 4) INSERT INTO dbo.users (id, username, password, email, full_name, enabled, created_at, role_id) VALUES (4, N'bob', N'$2a$10$XyrNA8NFN0Ko6X34a8jEIu4mVTI1GgO7KTwiqxTT17pmA3aLwHZ7G', N'bob@example.com', N'Bob Tran', 1, '2026-07-01T09:03:00', 3);
-IF NOT EXISTS (SELECT 1 FROM dbo.users WHERE id = 5) INSERT INTO dbo.users (id, username, password, email, full_name, enabled, created_at, role_id) VALUES (5, N'carol', N'$2a$10$Iahb6Eh0x0XLTJmcNkam8uLlRmej76zl8GW711KaGKpJh9U.f6r3u', N'carol@example.com', N'Carol Le', 1, '2026-07-01T09:04:00', 3);
-IF NOT EXISTS (SELECT 1 FROM dbo.users WHERE id = 6) INSERT INTO dbo.users (id, username, password, email, full_name, enabled, created_at, role_id) VALUES (6, N'david', N'$2a$10$3y2GoAVWd9tJ24xcsevCSerbxfOLIwWCXPgSLLehu1x1FDgruasG6', N'david@example.com', N'David Pham', 1, '2026-07-01T09:05:00', 3);
+IF NOT EXISTS (SELECT 1 FROM dbo.users WHERE id = 1) INSERT INTO dbo.users (id, username, password, email, full_name, enabled, account_status, created_at, role_id) VALUES (1, N'admin', N'$2a$10$GMxGu.0KX.u1gG5H5RrTj.cTzwQfaqGiEuyHWreaRr0A.IHEenilS', N'admin@recruit.com', N'System Administrator', 1, N'ACTIVE', '2026-07-01T09:00:00', 1);
+IF NOT EXISTS (SELECT 1 FROM dbo.users WHERE id = 2) INSERT INTO dbo.users (id, username, password, email, full_name, enabled, account_status, created_at, role_id) VALUES (2, N'recruiter', N'$2a$10$r7MkMz1PXe3JEz.USSGYn.ApIs.rI6yVROPRKLZUxMJC9n/QHx4cG', N'recruiter@recruit.com', N'Recruitment Manager', 1, N'ACTIVE', '2026-07-01T09:01:00', 2);
+IF NOT EXISTS (SELECT 1 FROM dbo.users WHERE id = 3) INSERT INTO dbo.users (id, username, password, email, full_name, enabled, account_status, created_at, role_id) VALUES (3, N'alice', N'$2a$10$lrhTGzM3Lvp31lKh.89E5eNQ1ex1gErHRQuRiznLnywfLSNlsIxxG', N'alice@example.com', N'Alice Nguyen', 1, N'ACTIVE', '2026-07-01T09:02:00', 3);
+IF NOT EXISTS (SELECT 1 FROM dbo.users WHERE id = 4) INSERT INTO dbo.users (id, username, password, email, full_name, enabled, account_status, created_at, role_id) VALUES (4, N'bob', N'$2a$10$XyrNA8NFN0Ko6X34a8jEIu4mVTI1GgO7KTwiqxTT17pmA3aLwHZ7G', N'bob@example.com', N'Bob Tran', 1, N'ACTIVE', '2026-07-01T09:03:00', 3);
+IF NOT EXISTS (SELECT 1 FROM dbo.users WHERE id = 5) INSERT INTO dbo.users (id, username, password, email, full_name, enabled, account_status, created_at, role_id) VALUES (5, N'carol', N'$2a$10$Iahb6Eh0x0XLTJmcNkam8uLlRmej76zl8GW711KaGKpJh9U.f6r3u', N'carol@example.com', N'Carol Le', 1, N'ACTIVE', '2026-07-01T09:04:00', 3);
+IF NOT EXISTS (SELECT 1 FROM dbo.users WHERE id = 6) INSERT INTO dbo.users (id, username, password, email, full_name, enabled, account_status, created_at, role_id) VALUES (6, N'david', N'$2a$10$3y2GoAVWd9tJ24xcsevCSerbxfOLIwWCXPgSLLehu1x1FDgruasG6', N'david@example.com', N'David Pham', 1, N'ACTIVE', '2026-07-01T09:05:00', 3);
 SET IDENTITY_INSERT dbo.users OFF;
 
 SET IDENTITY_INSERT dbo.company_profiles ON;

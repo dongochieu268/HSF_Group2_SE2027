@@ -230,12 +230,28 @@ BEGIN
         email NVARCHAR(150) NOT NULL,
         full_name NVARCHAR(150) NOT NULL,
         enabled BIT NOT NULL DEFAULT 1,
+        account_status NVARCHAR(20) NOT NULL CONSTRAINT df_users_account_status DEFAULT N'ACTIVE',
         created_at DATETIME2 NOT NULL DEFAULT SYSDATETIME(),
         role_id BIGINT NOT NULL,
         CONSTRAINT pk_users PRIMARY KEY (id),
         CONSTRAINT uq_users_username UNIQUE (username),
         CONSTRAINT uq_users_email UNIQUE (email)
     );
+END;
+
+IF COL_LENGTH(N'dbo.users', N'account_status') IS NULL
+BEGIN
+    ALTER TABLE dbo.users
+    ADD account_status NVARCHAR(20) NOT NULL
+        CONSTRAINT df_users_account_status DEFAULT N'ACTIVE';
+
+    EXEC(N'
+        UPDATE dbo.users
+        SET account_status = CASE
+            WHEN enabled = 1 THEN N''ACTIVE''
+            ELSE N''INACTIVE''
+        END
+    ');
 END;
 
 IF OBJECT_ID(N'dbo.fk_users_roles', N'F') IS NULL
