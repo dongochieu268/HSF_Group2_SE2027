@@ -1,12 +1,63 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{layout/base :: head('Lên lịch phỏng vấn')}"></head>
+<head th:replace="~{layout/base :: head('Interview Assignment')}"></head>
 <body>
 <header th:replace="~{layout/base :: header}"></header>
+
 <main class="container page-content">
-    <section class="placeholder"><h1>Lên lịch phỏng vấn</h1>
-        <p>Form lịch phỏng vấn được hoàn thiện ở phase sau.</p></section>
+    <!-- Context header: Thông tin ứng viên & tin tuyển dụng -->
+    <div class="page-heading">
+        <p class="eyebrow" th:text="${application.jobPosting.title}"></p>
+        <h1>Interview Assignment</h1>
+        <p th:text="${'Candidate: ' + application.candidate.name}"></p>
+    </div>
+
+    <!-- Display Condition: No active INTERVIEWER accounts exist -->
+    <div class="alert alert-info" th:if="${#lists.isEmpty(interviewers)}" style="margin-bottom: 20px; background: #e0f2fe; color: #075985; border: 1px solid #bae6fd;">
+        No Interviewers are available. Ask Admin to create Interviewer accounts first.
+    </div>
+
+    <form class="form-panel" th:action="@{/applications/{id}/interviews/new(id=${application.id})}" th:object="${interviewForm}" method="post">
+
+        <div class="alert alert-error" th:if="${#fields.hasGlobalErrors()}">
+            <p th:each="err : ${#fields.globalErrors()}" th:text="${err}"></p>
+        </div>
+
+        <div class="form-group">
+            <label for="interviewerName">Interviewer</label>
+            <!-- Dropdown disabled nếu không có Interviewer nào -->
+            <select class="form-control" id="interviewerName" th:field="*{interviewerName}" th:disabled="${#lists.isEmpty(interviewers)}">
+                <option value="">-- Select Interviewer --</option>
+                <option th:each="iv : ${interviewers}" th:value="${iv.fullName}" th:text="${iv.fullName}"></option>
+            </select>
+            <span class="field-error" th:if="${#fields.hasErrors('interviewerName')}" th:errors="*{interviewerName}"></span>
+        </div>
+
+        <div class="form-group">
+            <label for="interviewDate">Interview Date</label>
+            <input class="form-control" type="date" id="interviewDate" th:field="*{interviewDate}" th:disabled="${#lists.isEmpty(interviewers)}">
+            <span class="field-error" th:if="${#fields.hasErrors('interviewDate')}" th:errors="*{interviewDate}"></span>
+        </div>
+
+        <div class="form-group">
+            <label for="interviewTime">Interview Time (HH:mm)</label>
+            <input class="form-control" type="time" id="interviewTime" th:field="*{interviewTime}" th:disabled="${#lists.isEmpty(interviewers)}">
+            <span class="field-error" th:if="${#fields.hasErrors('interviewTime')}" th:errors="*{interviewTime}"></span>
+        </div>
+
+        <div class="form-group">
+            <label for="location">Location or meeting link</label>
+            <input class="form-control" type="text" id="location" th:field="*{location}" th:disabled="${#lists.isEmpty(interviewers)}" maxlength="500">
+            <span class="field-error" th:if="${#fields.hasErrors('location')}" th:errors="*{location}"></span>
+        </div>
+
+        <div class="actions" style="margin-top: 24px;">
+            <button class="button" type="submit" th:disabled="${#lists.isEmpty(interviewers)}">Assign and Schedule</button>
+            <a class="button button-secondary" th:href="@{/applications/{id}(id=${application.id})}">Cancel</a>
+        </div>
+    </form>
 </main>
+
 <footer th:replace="~{layout/base :: footer}"></footer>
 </body>
 </html>
