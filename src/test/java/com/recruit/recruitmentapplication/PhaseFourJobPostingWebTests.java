@@ -55,6 +55,19 @@ class PhaseFourJobPostingWebTests {
     }
 
     @Test
+    void publicAndCandidateNavigationUsesPublicJobsRouteOnly() throws Exception {
+        mockMvc.perform(get("/jobs"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("href=\"/jobs\">Jobs</a>")))
+                .andExpect(content().string(not(containsString("href=\"/manage/jobs\">Jobs</a>"))));
+
+        mockMvc.perform(get("/jobs").session(session("alice")))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("href=\"/jobs\">Jobs</a>")))
+                .andExpect(content().string(not(containsString("href=\"/manage/jobs\">Jobs</a>"))));
+    }
+
+    @Test
     void candidateCannotUseInternalJobManagementRoutes() throws Exception {
         JobPosting job = jobRepository.findByTitleAndCompany_Name("Senior Java Developer", "TechCorp Inc.").orElseThrow();
         MockHttpSession candidate = session("alice");

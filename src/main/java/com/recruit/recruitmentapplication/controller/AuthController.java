@@ -75,8 +75,8 @@ public class AuthController {
         }
 
         session.setAttribute(SessionConstants.LOGGED_IN_USER, SessionUser.from(user));
-        if (Role.ADMIN.equals(user.getRole().getName())) {
-            return "redirect:/admin/users";
+        if (Role.ADMIN.equals(user.getRole().getName()) || Role.HR_MANAGER.equals(user.getRole().getName())) {
+            return "redirect:/hr/dashboard";
         }
         return "redirect:/";
     }

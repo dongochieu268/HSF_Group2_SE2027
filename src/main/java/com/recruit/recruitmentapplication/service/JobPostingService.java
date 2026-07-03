@@ -77,6 +77,23 @@ public class JobPostingService {
     }
 
     @Transactional(readOnly = true)
+    public List<JobPosting> findManagedJobs(SessionUser user, String status) {
+        List<JobPosting> jobs = findManagedJobs(user);
+        if (status == null || status.isBlank()) {
+            return jobs;
+        }
+        JobPosting.PostingStatus selectedStatus;
+        try {
+            selectedStatus = JobPosting.PostingStatus.valueOf(status.trim().toUpperCase());
+        } catch (RuntimeException exception) {
+            throw new IllegalArgumentException("Invalid job status filter");
+        }
+        return jobs.stream()
+                .filter(job -> job.getStatus() == selectedStatus)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
     public List<JobPosting> findByCompany(Long companyId) {
         return jobPostingRepository.findByCompany_Id(companyId);
     }

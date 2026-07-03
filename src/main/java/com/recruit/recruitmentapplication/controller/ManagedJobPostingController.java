@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
 @RequestMapping("/manage/jobs")
@@ -29,9 +30,10 @@ public class ManagedJobPostingController {
     }
 
     @GetMapping
-    public String list(Model model, HttpSession session) {
+    public String list(@RequestParam(required = false) String status, Model model, HttpSession session) {
         try {
-            model.addAttribute("jobs", jobPostingService.findManagedJobs(current(session)));
+            model.addAttribute("jobs", jobPostingService.findManagedJobs(current(session), status));
+            model.addAttribute("selectedStatus", status);
             return "jobposting/manage-list";
         } catch (IllegalArgumentException exception) {
             return "redirect:/error/403";
