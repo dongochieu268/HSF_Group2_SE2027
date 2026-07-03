@@ -2,12 +2,12 @@ package com.recruit.recruitmentapplication;
 
 import com.recruit.recruitmentapplication.dto.CandidateProfileForm;
 import com.recruit.recruitmentapplication.dto.JobPostingForm;
+import com.recruit.recruitmentapplication.dto.SessionUser;
 import com.recruit.recruitmentapplication.entity.*;
 import com.recruit.recruitmentapplication.repository.*;
 import com.recruit.recruitmentapplication.security.PasswordUtil;
 import com.recruit.recruitmentapplication.service.CandidateService;
 import com.recruit.recruitmentapplication.service.JobPostingService;
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
@@ -69,16 +69,18 @@ class PhaseFiveCandidateServiceTests {
     }
 
     @Test
-    void recruiterFormCanAssignRequiredSkillsToJob() {
+    void hrManagerFormCanAssignRequiredSkillsToJob() {
         Company company = companyRepository().findByName("TechCorp Inc.").orElseThrow();
         Skill javaSkill = skillRepository.findByName("Java").orElseThrow();
         Skill docker = skillRepository.findByName("Docker").orElseThrow();
+        User hrManager = userRepository.findByUsernameWithRole("hrmanager").orElseThrow();
         JobPostingForm form = new JobPostingForm();
-        form.setTitle("Skill Assignment Job"); form.setDescription("Requires selected skills"); form.setLocation("HCM");
-        form.setJobType("FULL_TIME"); form.setSalaryMin(new BigDecimal("1000")); form.setSalaryMax(new BigDecimal("2000"));
+        form.setTitle("Skill Assignment Job"); form.setDepartment("Engineering"); form.setLocation("HCM");
+        form.setDescription("Requires selected skills"); form.setRequirements("Java and Docker");
+        form.setJobType("FULL_TIME"); form.setSalaryRange("15-20M VND");
         form.setDeadline(LocalDate.now().plusDays(20)); form.setCompanyId(company.getId());
         form.setSkillIds(Set.of(javaSkill.getId(), docker.getId()));
-        JobPosting job = jobPostingService.create(form);
+        JobPosting job = jobPostingService.create(form, SessionUser.from(hrManager));
         assertEquals(Set.of("Java", "Docker"), job.getRequiredSkills().stream().map(Skill::getName).collect(java.util.stream.Collectors.toSet()));
     }
 

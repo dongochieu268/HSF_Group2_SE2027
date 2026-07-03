@@ -110,13 +110,13 @@ class PhaseThreeCompanyServiceTests {
     }
 
     @Test
-    void initializerCreatesRecruiterAccountWithHashedPassword() {
-        User recruiter = userRepository.findByUsernameWithRole("recruiter").orElseThrow();
+    void initializerCreatesHrManagerAccountWithHashedPassword() {
+        User hrManager = userRepository.findByUsernameWithRole("hrmanager").orElseThrow();
 
-        assertEquals(Role.RECRUITER, recruiter.getRole().getName());
-        assertEquals("recruiter@recruit.com", recruiter.getEmail());
-        assertFalse("Recruiter@123".equals(recruiter.getPassword()));
-        assertTrue(passwordUtil.matches("Recruiter@123", recruiter.getPassword()));
+        assertEquals(Role.HR_MANAGER, hrManager.getRole().getName());
+        assertEquals("hrmanager@recruit.com", hrManager.getEmail());
+        assertFalse("Recruiter@123".equals(hrManager.getPassword()));
+        assertTrue(passwordUtil.matches("Recruiter@123", hrManager.getPassword()));
     }
 
     private CompanyForm validForm(String name) {

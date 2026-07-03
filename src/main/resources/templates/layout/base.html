@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title th:text="${pageTitle} + ' | Recruitment Web System'">Recruitment Web System</title>
     <link rel="stylesheet" th:href="@{/css/style.css}" href="/css/style.css">
+    <script defer th:src="@{/js/password-toggle.js}" src="/js/password-toggle.js"></script>
 </head>
 <body>
 <header class="site-header" th:fragment="header">
@@ -15,7 +16,7 @@
             <a th:href="@{/companies}">Công ty</a>
             <a th:href="@{/jobs}">Việc làm</a>
             <a th:if="${session.loggedInUser != null and session.loggedInUser.roleName == 'CANDIDATE'}" th:href="@{/candidates/me}">Hồ sơ của tôi</a>
-            <a th:if="${session.loggedInUser != null and (session.loggedInUser.roleName == 'ADMIN' or session.loggedInUser.roleName == 'RECRUITER')}" th:href="@{/candidates}">Ứng viên</a>
+            <a th:if="${session.loggedInUser != null and (session.loggedInUser.roleName == 'ADMIN' or session.loggedInUser.roleName == 'HR_MANAGER')}" th:href="@{/candidates}">Ứng viên</a>
             <a th:if="${session.loggedInUser?.roleName == 'ADMIN'}" th:href="@{/admin/users}">Quản lý người dùng</a>
             <a th:if="${session.loggedInUser == null}" th:href="@{/auth/login}">Đăng nhập</a>
         </nav>

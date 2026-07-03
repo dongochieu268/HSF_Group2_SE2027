@@ -164,18 +164,56 @@ BEGIN
     CREATE TABLE dbo.job_postings (
         id BIGINT IDENTITY(1,1) NOT NULL,
         title NVARCHAR(200) NOT NULL,
-        description NVARCHAR(2000),
-        location NVARCHAR(100),
+        department NVARCHAR(100) NOT NULL,
+        description NVARCHAR(4000) NOT NULL,
+        requirements NVARCHAR(4000),
+        location NVARCHAR(100) NOT NULL,
         job_type NVARCHAR(30),
         salary_min DECIMAL(12,2),
         salary_max DECIMAL(12,2),
+        salary_range NVARCHAR(100),
         posted_date DATE,
         deadline DATE,
         status NVARCHAR(30),
         company_id BIGINT NOT NULL,
+        created_by_id BIGINT NOT NULL,
         CONSTRAINT pk_job_postings PRIMARY KEY (id)
     );
 END;
+
+IF COL_LENGTH('dbo.job_postings', 'department') IS NULL
+    ALTER TABLE dbo.job_postings ADD department NVARCHAR(100) NOT NULL CONSTRAINT df_job_postings_department DEFAULT N'General';
+
+IF COL_LENGTH('dbo.job_postings', 'requirements') IS NULL
+    ALTER TABLE dbo.job_postings ADD requirements NVARCHAR(4000);
+
+IF COL_LENGTH('dbo.job_postings', 'salary_range') IS NULL
+    ALTER TABLE dbo.job_postings ADD salary_range NVARCHAR(100);
+
+IF COL_LENGTH('dbo.job_postings', 'created_by_id') IS NULL
+    ALTER TABLE dbo.job_postings ADD created_by_id BIGINT NULL;
+
+DECLARE @jobPostingStatusConstraintSql NVARCHAR(MAX) = N'';
+SELECT @jobPostingStatusConstraintSql = @jobPostingStatusConstraintSql
+    + N'ALTER TABLE dbo.job_postings DROP CONSTRAINT ' + QUOTENAME(cc.name) + N';'
+FROM sys.check_constraints cc
+JOIN sys.tables t ON cc.parent_object_id = t.object_id
+JOIN sys.schemas s ON t.schema_id = s.schema_id
+LEFT JOIN sys.columns c ON cc.parent_object_id = c.object_id AND cc.parent_column_id = c.column_id
+WHERE s.name = N'dbo'
+  AND t.name = N'job_postings'
+  AND (c.name = N'status' OR cc.definition LIKE N'%status%');
+
+IF @jobPostingStatusConstraintSql <> N''
+    EXEC sp_executesql @jobPostingStatusConstraintSql;
+
+UPDATE dbo.job_postings
+SET status = N'ACTIVE'
+WHERE status = N'OPEN';
+
+IF OBJECT_ID(N'dbo.ck_job_postings_status', N'C') IS NULL
+    ALTER TABLE dbo.job_postings WITH CHECK ADD CONSTRAINT ck_job_postings_status
+        CHECK (status IS NULL OR status IN (N'DRAFT', N'ACTIVE', N'CLOSED'));
 
 IF OBJECT_ID(N'dbo.job_required_skills', N'U') IS NULL
 BEGIN
@@ -230,6 +268,7 @@ BEGIN
         email NVARCHAR(150) NOT NULL,
         full_name NVARCHAR(150) NOT NULL,
         enabled BIT NOT NULL DEFAULT 1,
+        account_status NVARCHAR(20) NOT NULL DEFAULT N'ACTIVE',
         created_at DATETIME2 NOT NULL DEFAULT SYSDATETIME(),
         role_id BIGINT NOT NULL,
         CONSTRAINT pk_users PRIMARY KEY (id),
@@ -237,6 +276,17 @@ BEGIN
         CONSTRAINT uq_users_email UNIQUE (email)
     );
 END;
+
+IF COL_LENGTH('dbo.users', 'account_status') IS NULL
+    ALTER TABLE dbo.users ADD account_status NVARCHAR(20) NOT NULL CONSTRAINT df_users_account_status DEFAULT N'ACTIVE';
+
+UPDATE dbo.users
+SET account_status = CASE WHEN enabled = 1 THEN N'ACTIVE' ELSE N'INACTIVE' END
+WHERE account_status IS NULL;
+
+IF OBJECT_ID(N'dbo.ck_users_account_status', N'C') IS NULL
+    ALTER TABLE dbo.users WITH CHECK ADD CONSTRAINT ck_users_account_status
+        CHECK (account_status IN (N'ACTIVE', N'LOCKED', N'INACTIVE'));
 
 IF OBJECT_ID(N'dbo.fk_users_roles', N'F') IS NULL
     ALTER TABLE dbo.users ADD CONSTRAINT fk_users_roles FOREIGN KEY (role_id) REFERENCES dbo.roles(id);
@@ -252,6 +302,9 @@ IF OBJECT_ID(N'dbo.fk_companies_profiles', N'F') IS NULL
 
 IF OBJECT_ID(N'dbo.fk_job_postings_companies', N'F') IS NULL
     ALTER TABLE dbo.job_postings ADD CONSTRAINT fk_job_postings_companies FOREIGN KEY (company_id) REFERENCES dbo.companies(id);
+
+IF OBJECT_ID(N'dbo.fk_job_postings_created_by', N'F') IS NULL
+    ALTER TABLE dbo.job_postings ADD CONSTRAINT fk_job_postings_created_by FOREIGN KEY (created_by_id) REFERENCES dbo.users(id);
 
 IF OBJECT_ID(N'dbo.fk_candidate_skills_candidates', N'F') IS NULL
     ALTER TABLE dbo.candidate_skills ADD CONSTRAINT fk_candidate_skills_candidates FOREIGN KEY (candidate_id) REFERENCES dbo.candidates(id);

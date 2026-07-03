@@ -4,18 +4,23 @@ package com.recruit.recruitmentapplication.service;
 import com.recruit.recruitmentapplication.dto.ChangePasswordForm;
 import com.recruit.recruitmentapplication.dto.RegisterForm;
 import com.recruit.recruitmentapplication.dto.UpdateProfileForm;
+import com.recruit.recruitmentapplication.dto.UserAccountForm;
 import com.recruit.recruitmentapplication.entity.Role;
 import com.recruit.recruitmentapplication.entity.User;
+import com.recruit.recruitmentapplication.entity.User.AccountStatus;
 import com.recruit.recruitmentapplication.repository.RoleRepository;
 import com.recruit.recruitmentapplication.repository.UserRepository;
 import com.recruit.recruitmentapplication.security.PasswordUtil;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class UserService {
+    private static final Set<String> ADMIN_CREATABLE_ROLES = Set.of(Role.HR_MANAGER, Role.INTERVIEWER);
+
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final PasswordUtil passwordUtil;
@@ -47,6 +52,7 @@ public class UserService {
                 form.getFullName().trim(),
                 candidateRole
         );
+        user.setAccountStatus(AccountStatus.ACTIVE);
         return userRepository.save(user);
     }
 
@@ -66,6 +72,50 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
+    public List<User> findUsers(String keyword, String roleName, String statusName) {
+        String normalizedKeyword = keyword == null ? "" : keyword.trim().toLowerCase();
+        String normalizedRole = roleName == null ? "" : roleName.trim();
+        AccountStatus status = parseStatusOrNull(statusName);
+
+        return userRepository.findAllWithRole().stream()
+                .filter(user -> normalizedKeyword.isEmpty()
+                        || user.getFullName().toLowerCase().contains(normalizedKeyword)
+                        || user.getEmail().toLowerCase().contains(normalizedKeyword))
+                .filter(user -> normalizedRole.isEmpty() || user.getRole().getName().equals(normalizedRole))
+                .filter(user -> status == null || user.getAccountStatus() == status)
+                .toList();
+    }
+
+    @Transactional
+    public User createManagedAccount(UserAccountForm form) {
+        String username = form.getUsername().trim();
+        String email = form.getEmail().trim().toLowerCase();
+        String roleName = form.getRoleName().trim();
+
+        if (!ADMIN_CREATABLE_ROLES.contains(roleName)) {
+            throw new IllegalArgumentException("Admin can create only HR Manager or Interviewer accounts.");
+        }
+        if (userRepository.existsByUsername(username)) {
+            throw new IllegalArgumentException("This username is already taken. Please choose another.");
+        }
+        if (userRepository.existsByEmail(email)) {
+            throw new IllegalArgumentException("This email address is already registered.");
+        }
+
+        Role role = roleRepository.findByName(roleName)
+                .orElseThrow(() -> new IllegalArgumentException("Role is not available."));
+        User user = new User(
+                username,
+                passwordUtil.hash(form.getInitialPassword()),
+                email,
+                form.getFullName().trim(),
+                role
+        );
+        user.setAccountStatus(AccountStatus.ACTIVE);
+        return userRepository.save(user);
+    }
+
+    @Transactional(readOnly = true)
     public User findById(Long id) {
         return userRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy người dùng id=" + id));
@@ -74,6 +124,13 @@ public class UserService {
     @Transactional(readOnly = true)
     public List<Role> findAllRoles() {
         return roleRepository.findAll();
+    }
+
+    @Transactional(readOnly = true)
+    public List<Role> findAdminCreatableRoles() {
+        return roleRepository.findAll().stream()
+                .filter(role -> ADMIN_CREATABLE_ROLES.contains(role.getName()))
+                .toList();
     }
 
     @Transactional
@@ -122,7 +179,33 @@ public class UserService {
     @Transactional
     public User toggleEnabled(Long userId) {
         User user = findById(userId);
-        user.setEnabled(!user.isEnabled());
+        user.setAccountStatus(user.isEnabled() ? AccountStatus.INACTIVE : AccountStatus.ACTIVE);
+        return userRepository.save(user);
+    }
+
+    @Transactional
+    public User deactivate(Long userId) {
+        User user = findById(userId);
+        if (Role.ADMIN.equals(user.getRole().getName()) && activeAdminCount() <= 1) {
+            throw new IllegalArgumentException("The only active Admin account cannot be deactivated.");
+        }
+        user.setAccountStatus(AccountStatus.INACTIVE);
+        return userRepository.save(user);
+    }
+
+    @Transactional
+    public User unlock(Long userId) {
+        User user = findById(userId);
+        if (user.getAccountStatus() == AccountStatus.LOCKED) {
+            user.setAccountStatus(AccountStatus.ACTIVE);
+        }
+        return userRepository.save(user);
+    }
+
+    @Transactional
+    public User lockAccount(Long userId) {
+        User user = findById(userId);
+        user.setAccountStatus(AccountStatus.LOCKED);
         return userRepository.save(user);
     }
 
@@ -130,5 +213,29 @@ public class UserService {
     public void delete(Long userId) {
         User user = findById(userId);
         userRepository.delete(user);
+    }
+
+    public boolean canDeactivate(User user) {
+        if (user == null || user.getAccountStatus() == AccountStatus.INACTIVE) {
+            return false;
+        }
+        return !(Role.ADMIN.equals(user.getRole().getName()) && activeAdminCount() <= 1);
+    }
+
+    private long activeAdminCount() {
+        return userRepository.findByRole_Name(Role.ADMIN).stream()
+                .filter(User::isEnabled)
+                .count();
+    }
+
+    private AccountStatus parseStatusOrNull(String statusName) {
+        if (statusName == null || statusName.trim().isEmpty()) {
+            return null;
+        }
+        try {
+            return AccountStatus.valueOf(statusName.trim());
+        } catch (IllegalArgumentException exception) {
+            return null;
+        }
     }
 }

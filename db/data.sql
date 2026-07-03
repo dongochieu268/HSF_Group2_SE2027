@@ -1,17 +1,22 @@
 SET IDENTITY_INSERT dbo.roles ON;
 IF NOT EXISTS (SELECT 1 FROM dbo.roles WHERE id = 1) INSERT INTO dbo.roles (id, name) VALUES (1, N'ADMIN');
-IF NOT EXISTS (SELECT 1 FROM dbo.roles WHERE id = 2) INSERT INTO dbo.roles (id, name) VALUES (2, N'RECRUITER');
+IF NOT EXISTS (SELECT 1 FROM dbo.roles WHERE id = 2) INSERT INTO dbo.roles (id, name) VALUES (2, N'HR_MANAGER');
 IF NOT EXISTS (SELECT 1 FROM dbo.roles WHERE id = 3) INSERT INTO dbo.roles (id, name) VALUES (3, N'CANDIDATE');
+IF NOT EXISTS (SELECT 1 FROM dbo.roles WHERE id = 4) INSERT INTO dbo.roles (id, name) VALUES (4, N'INTERVIEWER');
 SET IDENTITY_INSERT dbo.roles OFF;
+
+UPDATE dbo.roles SET name = N'HR_MANAGER' WHERE name = N'RECRUITER';
 
 SET IDENTITY_INSERT dbo.users ON;
 IF NOT EXISTS (SELECT 1 FROM dbo.users WHERE id = 1) INSERT INTO dbo.users (id, username, password, email, full_name, enabled, created_at, role_id) VALUES (1, N'admin', N'$2a$10$GMxGu.0KX.u1gG5H5RrTj.cTzwQfaqGiEuyHWreaRr0A.IHEenilS', N'admin@recruit.com', N'System Administrator', 1, '2026-07-01T09:00:00', 1);
-IF NOT EXISTS (SELECT 1 FROM dbo.users WHERE id = 2) INSERT INTO dbo.users (id, username, password, email, full_name, enabled, created_at, role_id) VALUES (2, N'recruiter', N'$2a$10$r7MkMz1PXe3JEz.USSGYn.ApIs.rI6yVROPRKLZUxMJC9n/QHx4cG', N'recruiter@recruit.com', N'Recruitment Manager', 1, '2026-07-01T09:01:00', 2);
+IF NOT EXISTS (SELECT 1 FROM dbo.users WHERE id = 2) INSERT INTO dbo.users (id, username, password, email, full_name, enabled, created_at, role_id) VALUES (2, N'hrmanager', N'$2a$10$r7MkMz1PXe3JEz.USSGYn.ApIs.rI6yVROPRKLZUxMJC9n/QHx4cG', N'hrmanager@recruit.com', N'HR Manager', 1, '2026-07-01T09:01:00', 2);
 IF NOT EXISTS (SELECT 1 FROM dbo.users WHERE id = 3) INSERT INTO dbo.users (id, username, password, email, full_name, enabled, created_at, role_id) VALUES (3, N'alice', N'$2a$10$lrhTGzM3Lvp31lKh.89E5eNQ1ex1gErHRQuRiznLnywfLSNlsIxxG', N'alice@example.com', N'Alice Nguyen', 1, '2026-07-01T09:02:00', 3);
 IF NOT EXISTS (SELECT 1 FROM dbo.users WHERE id = 4) INSERT INTO dbo.users (id, username, password, email, full_name, enabled, created_at, role_id) VALUES (4, N'bob', N'$2a$10$XyrNA8NFN0Ko6X34a8jEIu4mVTI1GgO7KTwiqxTT17pmA3aLwHZ7G', N'bob@example.com', N'Bob Tran', 1, '2026-07-01T09:03:00', 3);
 IF NOT EXISTS (SELECT 1 FROM dbo.users WHERE id = 5) INSERT INTO dbo.users (id, username, password, email, full_name, enabled, created_at, role_id) VALUES (5, N'carol', N'$2a$10$Iahb6Eh0x0XLTJmcNkam8uLlRmej76zl8GW711KaGKpJh9U.f6r3u', N'carol@example.com', N'Carol Le', 1, '2026-07-01T09:04:00', 3);
 IF NOT EXISTS (SELECT 1 FROM dbo.users WHERE id = 6) INSERT INTO dbo.users (id, username, password, email, full_name, enabled, created_at, role_id) VALUES (6, N'david', N'$2a$10$3y2GoAVWd9tJ24xcsevCSerbxfOLIwWCXPgSLLehu1x1FDgruasG6', N'david@example.com', N'David Pham', 1, '2026-07-01T09:05:00', 3);
 SET IDENTITY_INSERT dbo.users OFF;
+
+UPDATE dbo.users SET username = N'hrmanager', email = N'hrmanager@recruit.com', full_name = N'HR Manager', role_id = 2 WHERE username = N'recruiter';
 
 SET IDENTITY_INSERT dbo.company_profiles ON;
 IF NOT EXISTS (SELECT 1 FROM dbo.company_profiles WHERE id = 1) INSERT INTO dbo.company_profiles (id, description, headquarters, employee_count, founded_year) VALUES (1, N'Cloud solutions leader', N'HCM', 500, 2010);
@@ -47,12 +52,19 @@ IF NOT EXISTS (SELECT 1 FROM dbo.skills WHERE id = 18) INSERT INTO dbo.skills (i
 SET IDENTITY_INSERT dbo.skills OFF;
 
 SET IDENTITY_INSERT dbo.job_postings ON;
-IF NOT EXISTS (SELECT 1 FROM dbo.job_postings WHERE id = 1) INSERT INTO dbo.job_postings (id, title, description, location, job_type, salary_min, salary_max, posted_date, deadline, status, company_id) VALUES (1, N'Senior Java Developer', N'Develop backend services for the recruitment platform', N'HCM', N'FULL_TIME', 2000.00, 3500.00, '2026-07-01', '2026-07-31', N'OPEN', 1);
-IF NOT EXISTS (SELECT 1 FROM dbo.job_postings WHERE id = 2) INSERT INTO dbo.job_postings (id, title, description, location, job_type, salary_min, salary_max, posted_date, deadline, status, company_id) VALUES (2, N'Frontend Developer', N'Build user interfaces for candidates and employers', N'Remote', N'REMOTE', 1500.00, 2500.00, '2026-07-01', '2026-07-21', N'OPEN', 1);
-IF NOT EXISTS (SELECT 1 FROM dbo.job_postings WHERE id = 3) INSERT INTO dbo.job_postings (id, title, description, location, job_type, salary_min, salary_max, posted_date, deadline, status, company_id) VALUES (3, N'Data Analyst', N'Analyze finance and recruitment data', N'Ha Noi', N'FULL_TIME', 1200.00, 2000.00, '2026-07-01', '2026-07-16', N'OPEN', 2);
-IF NOT EXISTS (SELECT 1 FROM dbo.job_postings WHERE id = 4) INSERT INTO dbo.job_postings (id, title, description, location, job_type, salary_min, salary_max, posted_date, deadline, status, company_id) VALUES (4, N'DevOps Engineer', N'Maintain cloud infrastructure and CI/CD', N'Ha Noi', N'FULL_TIME', 1800.00, 3000.00, '2026-07-01', '2026-07-26', N'OPEN', 2);
-IF NOT EXISTS (SELECT 1 FROM dbo.job_postings WHERE id = 5) INSERT INTO dbo.job_postings (id, title, description, location, job_type, salary_min, salary_max, posted_date, deadline, status, company_id) VALUES (5, N'UX/UI Designer', N'Design candidate and recruiter experiences', N'Da Nang', N'FULL_TIME', 1000.00, 1800.00, '2026-07-01', '2026-07-11', N'OPEN', 3);
+IF NOT EXISTS (SELECT 1 FROM dbo.job_postings WHERE id = 1) INSERT INTO dbo.job_postings (id, title, department, description, requirements, location, job_type, salary_min, salary_max, salary_range, posted_date, deadline, status, company_id, created_by_id) VALUES (1, N'Senior Java Developer', N'Engineering', N'Develop backend services for the recruitment platform', N'Backend service development with Java, Spring Boot, SQL, and Docker.', N'HCM', N'FULL_TIME', 2000.00, 3500.00, N'2000-3500 USD', '2026-07-01', '2026-07-31', N'ACTIVE', 1, 2);
+IF NOT EXISTS (SELECT 1 FROM dbo.job_postings WHERE id = 2) INSERT INTO dbo.job_postings (id, title, department, description, requirements, location, job_type, salary_min, salary_max, salary_range, posted_date, deadline, status, company_id, created_by_id) VALUES (2, N'Frontend Developer', N'Product Engineering', N'Build user interfaces for candidates and employers', N'React, TypeScript, CSS, and REST API experience.', N'Remote', N'REMOTE', 1500.00, 2500.00, N'1500-2500 USD', '2026-07-01', '2026-07-21', N'ACTIVE', 1, 2);
+IF NOT EXISTS (SELECT 1 FROM dbo.job_postings WHERE id = 3) INSERT INTO dbo.job_postings (id, title, department, description, requirements, location, job_type, salary_min, salary_max, salary_range, posted_date, deadline, status, company_id, created_by_id) VALUES (3, N'Data Analyst', N'Analytics', N'Analyze finance and recruitment data', N'SQL, Python, Power BI, and Excel reporting experience.', N'Ha Noi', N'FULL_TIME', 1200.00, 2000.00, N'1200-2000 USD', '2026-07-01', '2026-07-16', N'ACTIVE', 2, 2);
+IF NOT EXISTS (SELECT 1 FROM dbo.job_postings WHERE id = 4) INSERT INTO dbo.job_postings (id, title, department, description, requirements, location, job_type, salary_min, salary_max, salary_range, posted_date, deadline, status, company_id, created_by_id) VALUES (4, N'DevOps Engineer', N'Platform', N'Maintain cloud infrastructure and CI/CD', N'Docker, Kubernetes, AWS, and CI/CD experience.', N'Ha Noi', N'FULL_TIME', 1800.00, 3000.00, N'1800-3000 USD', '2026-07-01', '2026-07-26', N'DRAFT', 2, 2);
+IF NOT EXISTS (SELECT 1 FROM dbo.job_postings WHERE id = 5) INSERT INTO dbo.job_postings (id, title, department, description, requirements, location, job_type, salary_min, salary_max, salary_range, posted_date, deadline, status, company_id, created_by_id) VALUES (5, N'UX/UI Designer', N'Design', N'Design candidate and recruiter experiences', N'Figma, Adobe XD, CSS, and prototyping experience.', N'Da Nang', N'FULL_TIME', 1000.00, 1800.00, N'1000-1800 USD', '2026-07-01', '2026-07-11', N'CLOSED', 3, 2);
 SET IDENTITY_INSERT dbo.job_postings OFF;
+
+UPDATE dbo.job_postings
+SET department = COALESCE(department, N'General'),
+    requirements = COALESCE(requirements, description),
+    salary_range = COALESCE(salary_range, CONCAT(COALESCE(CAST(salary_min AS NVARCHAR(30)), N'-'), N' - ', COALESCE(CAST(salary_max AS NVARCHAR(30)), N'-'))),
+    created_by_id = COALESCE(created_by_id, 2),
+    status = CASE WHEN status = N'OPEN' THEN N'ACTIVE' ELSE status END;
 
 SET IDENTITY_INSERT dbo.candidate_profiles ON;
 IF NOT EXISTS (SELECT 1 FROM dbo.candidate_profiles WHERE id = 1) INSERT INTO dbo.candidate_profiles (id, years_of_experience, education_level, current_title, linkedin_url, resume_summary) VALUES (1, 5, N'Bachelor CS', N'Senior Java Developer', N'https://linkedin.com/in/alice-nguyen', N'Backend engineer with strong Java and cloud experience.');

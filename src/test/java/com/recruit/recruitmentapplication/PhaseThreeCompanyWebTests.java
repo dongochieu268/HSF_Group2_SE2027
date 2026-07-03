@@ -73,9 +73,9 @@ class PhaseThreeCompanyWebTests {
     }
 
     @Test
-    void recruiterCanOpenCreateAndEditForms() throws Exception {
+    void hrManagerCanOpenCreateAndEditForms() throws Exception {
         Company company = companyRepository.findByName("TechCorp Inc.").orElseThrow();
-        MockHttpSession session = session(Role.RECRUITER);
+        MockHttpSession session = session(Role.HR_MANAGER);
 
         mockMvc.perform(get("/companies/new").session(session))
                 .andExpect(status().isOk())
@@ -88,7 +88,7 @@ class PhaseThreeCompanyWebTests {
     }
 
     @Test
-    void adminCanCreateAndRecruiterCanUpdateCompany() throws Exception {
+    void adminCanCreateAndHrManagerCanUpdateCompany() throws Exception {
         mockMvc.perform(post("/companies")
                         .session(session(Role.ADMIN))
                         .param("name", "Web Created Company")
@@ -104,7 +104,7 @@ class PhaseThreeCompanyWebTests {
         assertEquals("Created through MockMvc", created.getProfile().getDescription());
 
         mockMvc.perform(post("/companies/{id}/edit", created.getId())
-                        .session(session(Role.RECRUITER))
+                        .session(session(Role.HR_MANAGER))
                         .param("name", "Web Updated Company")
                         .param("industry", "Design")
                         .param("website", "web-updated.example")
@@ -139,13 +139,13 @@ class PhaseThreeCompanyWebTests {
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("Cloud solutions leader")))
                 .andExpect(content().string(containsString("techcorp.com")))
-                .andExpect(content().string(not(containsString("Chỉnh sửa"))))
+                .andExpect(content().string(not(containsString("/companies/" + company.getId() + "/edit"))))
                 .andExpect(content().string(not(containsString("Xóa công ty"))));
     }
 
     @Test
     void sharedFormRendersAllCompanyAndProfileFields() throws Exception {
-        mockMvc.perform(get("/companies/new").session(session(Role.RECRUITER)))
+        mockMvc.perform(get("/companies/new").session(session(Role.HR_MANAGER)))
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("name=\"name\"")))
                 .andExpect(content().string(containsString("name=\"industry\"")))

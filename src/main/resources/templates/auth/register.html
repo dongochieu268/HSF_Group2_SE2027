@@ -1,19 +1,51 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{layout/base :: head('Đăng ký')}"></head>
+<head th:replace="~{layout/base :: head('Dang ky')}"></head>
 <body>
 <header th:replace="~{layout/base :: header}"></header>
 <main class="container page-content">
-    <div class="page-heading"><p class="eyebrow">Tài khoản</p><h1>Đăng ký</h1><p>Tài khoản mới được gán vai trò CANDIDATE.</p></div>
+    <div class="page-heading">
+        <p class="eyebrow">T&#224;i kho&#7843;n</p>
+        <h1>&#272;&#259;ng k&#253;</h1>
+        <p>T&#224;i kho&#7843;n m&#7899;i &#273;&#432;&#7907;c g&#225;n vai tr&#242; CANDIDATE.</p>
+    </div>
     <form class="form-panel" th:action="@{/auth/register}" th:object="${registerForm}" method="post">
         <div class="alert alert-error" th:if="${registrationError}" th:text="${registrationError}"></div>
-        <div class="form-group"><label for="fullName">Họ và tên</label><input class="form-control" id="fullName" th:field="*{fullName}"><span class="field-error" th:errors="*{fullName}"></span></div>
-        <div class="form-group"><label for="username">Tên đăng nhập</label><input class="form-control" id="username" th:field="*{username}" autocomplete="username"><span class="field-error" th:errors="*{username}"></span></div>
-        <div class="form-group"><label for="email">Email</label><input class="form-control" id="email" type="email" th:field="*{email}" autocomplete="email"><span class="field-error" th:errors="*{email}"></span></div>
-        <div class="form-group"><label for="password">Mật khẩu</label><input class="form-control" id="password" type="password" th:field="*{password}" autocomplete="new-password"><span class="field-error" th:errors="*{password}"></span></div>
-        <div class="form-group"><label for="confirmPassword">Xác nhận mật khẩu</label><input class="form-control" id="confirmPassword" type="password" th:field="*{confirmPassword}" autocomplete="new-password"><span class="field-error" th:errors="*{confirmPassword}"></span></div>
-        <button class="button" type="submit">Đăng ký</button>
-        <a class="button button-secondary" th:href="@{/auth/login}">Quay lại đăng nhập</a>
+
+        <div class="form-group">
+            <label for="fullName">H&#7885; v&#224; t&#234;n</label>
+            <input class="form-control" id="fullName" th:field="*{fullName}">
+            <span class="field-error" th:errors="*{fullName}"></span>
+        </div>
+        <div class="form-group">
+            <label for="username">T&#234;n &#273;&#259;ng nh&#7853;p</label>
+            <input class="form-control" id="username" th:field="*{username}" autocomplete="username">
+            <span class="field-error" th:errors="*{username}"></span>
+        </div>
+        <div class="form-group">
+            <label for="email">Email</label>
+            <input class="form-control" id="email" type="email" th:field="*{email}" autocomplete="email">
+            <span class="field-error" th:errors="*{email}"></span>
+        </div>
+        <div class="form-group">
+            <label for="password">M&#7853;t kh&#7849;u</label>
+            <div class="password-input-row">
+                <input class="form-control" id="password" type="password" th:field="*{password}" autocomplete="new-password">
+                <button class="password-toggle" type="button" data-password-toggle="password" aria-controls="password" aria-label="Show password" aria-pressed="false">Show</button>
+            </div>
+            <span class="field-error" th:errors="*{password}"></span>
+        </div>
+        <div class="form-group">
+            <label for="confirmPassword">X&#225;c nh&#7853;n m&#7853;t kh&#7849;u</label>
+            <div class="password-input-row">
+                <input class="form-control" id="confirmPassword" type="password" th:field="*{confirmPassword}" autocomplete="new-password">
+                <button class="password-toggle" type="button" data-password-toggle="confirmPassword" aria-controls="confirmPassword" aria-label="Show password" aria-pressed="false">Show</button>
+            </div>
+            <span class="field-error" th:errors="*{confirmPassword}"></span>
+        </div>
+
+        <button class="button" type="submit">&#272;&#259;ng k&#253;</button>
+        <a class="button button-secondary" th:href="@{/auth/login}">Quay l&#7841;i &#273;&#259;ng nh&#7853;p</a>
     </form>
 </main>
 <footer th:replace="~{layout/base :: footer}"></footer>

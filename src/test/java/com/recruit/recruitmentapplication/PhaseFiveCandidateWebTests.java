@@ -24,7 +24,7 @@ class PhaseFiveCandidateWebTests {
         Candidate alice=candidates.findByEmail("alice@example.com").orElseThrow();
         mockMvc.perform(get("/candidates")).andExpect(redirectedUrl("/auth/login"));
         mockMvc.perform(get("/candidates").session(session("admin"))).andExpect(status().isOk()).andExpect(content().string(containsString("Alice Nguyen")));
-        mockMvc.perform(get("/candidates/{id}",alice.getId()).session(session("recruiter"))).andExpect(status().isOk()).andExpect(content().string(containsString("Spring Boot")));
+        mockMvc.perform(get("/candidates/{id}",alice.getId()).session(session("hrmanager"))).andExpect(status().isOk()).andExpect(content().string(containsString("Spring Boot")));
     }
 
     @Test void candidateIsBlockedFromDirectoryAndArbitraryIds() throws Exception {

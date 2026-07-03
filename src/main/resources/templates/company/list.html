@@ -10,7 +10,7 @@
             <h1>Danh sách công ty</h1>
             <p>Thông tin doanh nghiệp và hồ sơ tuyển dụng.</p>
         </div>
-        <a class="button" th:if="${session.loggedInUser.roleName == 'ADMIN' or session.loggedInUser.roleName == 'RECRUITER'}"
+        <a class="button" th:if="${session.loggedInUser.roleName == 'ADMIN' or session.loggedInUser.roleName == 'HR_MANAGER'}"
            th:href="@{/companies/new}">Thêm công ty</a>
     </div>
 

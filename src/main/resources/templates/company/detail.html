@@ -10,7 +10,7 @@
             <h1 th:text="${company.name}"></h1>
             <p th:text="${company.profile != null ? company.profile.description : 'Chưa có hồ sơ công ty.'}"></p>
         </div>
-        <div class="actions" th:if="${session.loggedInUser.roleName == 'ADMIN' or session.loggedInUser.roleName == 'RECRUITER'}">
+        <div class="actions" th:if="${session.loggedInUser.roleName == 'ADMIN' or session.loggedInUser.roleName == 'HR_MANAGER'}">
             <a class="button button-secondary" th:href="@{/companies/{id}/edit(id=${company.id})}">Chỉnh sửa</a>
             <form th:action="@{/companies/{id}/delete(id=${company.id})}" method="post"
                   onsubmit="return confirm('Xóa công ty này?')">

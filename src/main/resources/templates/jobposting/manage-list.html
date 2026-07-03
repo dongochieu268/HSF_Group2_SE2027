@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/base :: head('Manage Jobs')}"></head>
+<body>
+<header th:replace="~{layout/base :: header}"></header>
+<main class="container page-content">
+    <div class="page-heading heading-row">
+        <div>
+            <p class="eyebrow">Job Management</p>
+            <h1>Jobs</h1>
+            <p>Internal list for Admin and HR Manager job ownership workflows.</p>
+        </div>
+        <a class="button" th:href="@{/manage/jobs/new}">Create New Job</a>
+    </div>
+    <div class="table-wrap">
+        <table>
+            <thead>
+            <tr>
+                <th>Title</th>
+                <th>Department</th>
+                <th>Location</th>
+                <th>Status</th>
+                <th>Deadline</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="job : ${jobs}">
+                <td><strong><a class="text-link" th:href="@{/manage/jobs/{id}(id=${job.id})}" th:text="${job.title}"></a></strong></td>
+                <td th:text="${job.department}"></td>
+                <td th:text="${job.location}"></td>
+                <td><span class="badge" th:text="${job.status}"></span></td>
+                <td th:text="${job.deadline ?: '-'}"></td>
+                <td><a class="button button-secondary button-small" th:href="@{/manage/jobs/{id}(id=${job.id})}">Open</a></td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(jobs)}">
+                <td colspan="6" class="empty-cell">No job postings match your access scope.</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</main>
+<footer th:replace="~{layout/base :: footer}"></footer>
+</body>
+</html>

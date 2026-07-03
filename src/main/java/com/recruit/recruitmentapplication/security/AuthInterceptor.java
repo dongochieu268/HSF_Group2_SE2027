@@ -34,6 +34,12 @@ public class AuthInterceptor implements HandlerInterceptor {
             return false;
         }
 
+        if (request.getRequestURI().startsWith(request.getContextPath() + "/manage")
+                && !canManageRecruitment(loggedInUser)) {
+            response.sendRedirect(request.getContextPath() + "/error/403");
+            return false;
+        }
+
         if (isCompanyWriteRequest(request) && !canManageCompanies(loggedInUser)) {
             response.sendRedirect(request.getContextPath() + "/error/403");
             return false;
@@ -62,7 +68,11 @@ public class AuthInterceptor implements HandlerInterceptor {
     }
 
     private boolean canManageCompanies(SessionUser user) {
-        return Role.ADMIN.equals(user.getRoleName()) || Role.RECRUITER.equals(user.getRoleName());
+        return canManageRecruitment(user);
+    }
+
+    private boolean canManageRecruitment(SessionUser user) {
+        return Role.ADMIN.equals(user.getRoleName()) || Role.HR_MANAGER.equals(user.getRoleName());
     }
 
     private boolean isJobWriteRequest(HttpServletRequest request) {
@@ -84,6 +94,6 @@ public class AuthInterceptor implements HandlerInterceptor {
         String path = request.getRequestURI().substring(request.getContextPath().length());
         if (!path.startsWith("/candidates")) return false;
         if (path.equals("/candidates/me")) return !Role.CANDIDATE.equals(user.getRoleName());
-        return !(Role.ADMIN.equals(user.getRoleName()) || Role.RECRUITER.equals(user.getRoleName()));
+        return !canManageRecruitment(user);
     }
 }

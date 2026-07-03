@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/base :: head('Job Detail')}"></head>
+<body>
+<header th:replace="~{layout/base :: header}"></header>
+<main class="container page-content">
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+        <a th:href="@{/manage/jobs}">Jobs</a>
+        <span>/</span>
+        <span th:text="${job.title}"></span>
+    </nav>
+
+    <div class="page-heading heading-row job-detail-heading">
+        <div>
+            <p class="eyebrow" th:text="${job.department}"></p>
+            <h1>
+                <span th:text="${job.title}"></span>
+                <span class="badge status-badge" th:classappend="' status-' + ${#strings.toLowerCase(job.status.name())}"
+                      th:text="${job.status}"></span>
+            </h1>
+            <p>
+                <span th:text="${job.location}"></span>
+                <span> - </span>
+                <span th:text="${job.createdBy != null ? job.createdBy.fullName : '-'}"></span>
+            </p>
+        </div>
+        <div class="actions">
+            <a class="button button-secondary" th:if="${canEdit}" th:href="@{/manage/jobs/{id}/edit(id=${job.id})}">Edit</a>
+            <form th:if="${canPublish}" th:action="@{/manage/jobs/{id}/publish(id=${job.id})}" method="post"
+                  onsubmit="return confirm('Publish this job posting?')">
+                <button class="button" type="submit">Publish</button>
+            </form>
+            <form th:if="${canClose}" th:action="@{/manage/jobs/{id}/close(id=${job.id})}" method="post"
+                  onsubmit="return confirm('Closing will stop accepting new applications. Existing applications are not affected.')">
+                <button class="button button-danger" type="submit">Close</button>
+            </form>
+            <form th:if="${canDelete}" th:action="@{/manage/jobs/{id}/delete(id=${job.id})}" method="post"
+                  onsubmit="return confirm('Delete this draft job posting? This action cannot be undone.')">
+                <button class="button button-danger" type="submit">Delete</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="alert alert-info" th:if="${job.status.name() == 'CLOSED'}">
+        This posting is closed and no longer accepting applications.
+    </div>
+
+    <section class="metric-strip" aria-label="Job summary">
+        <div>
+            <span>Total applications</span>
+            <strong th:text="${applicationCount}"></strong>
+        </div>
+        <div>
+            <span>Status</span>
+            <strong th:text="${job.status}"></strong>
+        </div>
+        <div>
+            <span>Deadline</span>
+            <strong th:text="${job.deadline ?: '-'}"></strong>
+        </div>
+        <div>
+            <span>Created by</span>
+            <strong th:text="${job.createdBy != null ? job.createdBy.fullName : '-'}"></strong>
+        </div>
+    </section>
+
+    <form class="detail-panel readonly-job-panel readonly-job-form" aria-label="Job information">
+        <h2>Job information</h2>
+        <div class="form-grid">
+            <div class="form-group">
+                <label for="jobDepartment">Department</label>
+                <input class="form-control" id="jobDepartment" name="department" th:value="${job.department}" readonly>
+            </div>
+            <div class="form-group">
+                <label for="jobLocation">Location</label>
+                <input class="form-control" id="jobLocation" name="location" th:value="${job.location}" readonly>
+            </div>
+            <div class="form-group">
+                <label for="jobSalaryRange">Salary range</label>
+                <input class="form-control" id="jobSalaryRange" name="salaryRange" th:value="${job.salaryRange ?: '-'}" readonly>
+            </div>
+            <div class="form-group">
+                <label for="jobDeadline">Deadline</label>
+                <input class="form-control" id="jobDeadline" name="deadline" th:value="${job.deadline ?: '-'}" readonly>
+            </div>
+            <div class="form-group">
+                <label for="jobCreatedDate">Date created</label>
+                <input class="form-control" id="jobCreatedDate" name="postedDate" th:value="${job.postedDate}" readonly>
+            </div>
+            <div class="form-group">
+                <label for="jobCreatedBy">Created by</label>
+                <input class="form-control" id="jobCreatedBy" name="createdBy" th:value="${job.createdBy != null ? job.createdBy.fullName : '-'}" readonly>
+            </div>
+            <div class="form-group form-grid-full">
+                <label for="jobDescription">Description</label>
+                <textarea class="form-control" id="jobDescription" name="description" rows="6" readonly th:text="${job.description}"></textarea>
+            </div>
+            <div class="form-group form-grid-full">
+                <label for="jobRequirements">Requirements</label>
+                <textarea class="form-control" id="jobRequirements" name="requirements" rows="5" readonly th:text="${job.requirements ?: '-'}"></textarea>
+            </div>
+        </div>
+        <div class="read-block">
+            <h3>Required skills</h3>
+            <p class="muted" th:if="${#sets.isEmpty(job.requiredSkills)}">No required skills have been added.</p>
+            <span class="badge skill-badge" th:each="s : ${job.requiredSkills}" th:text="${s.name}"></span>
+        </div>
+    </form>
+
+    <section class="detail-panel pipeline-panel">
+        <div class="section-title-row">
+            <h2>Pipeline summary</h2>
+            <span class="badge" th:text="${applicationCount + ' applications'}"></span>
+        </div>
+        <p class="empty-cell" th:if="${applicationCount == 0}">No applications have been received for this job posting yet.</p>
+        <div class="pipeline-list">
+            <div class="pipeline-row" th:each="stage : ${pipelineStages}">
+                <span class="pipeline-label" th:text="${stage.name}"></span>
+                <div class="pipeline-track">
+                    <span class="pipeline-fill" th:style="'width: ' + ${stage.percentage} + '%'"></span>
+                </div>
+                <strong th:text="${stage.count}"></strong>
+            </div>
+        </div>
+    </section>
+
+    <nav class="tab-links" aria-label="Job detail tabs">
+        <a th:href="@{/manage/jobs/{id}/applications(id=${job.id})}">View Applications</a>
+        <a th:href="@{/manage/jobs/{id}/report(id=${job.id})}">Report</a>
+    </nav>
+</main>
+<footer th:replace="~{layout/base :: footer}"></footer>
+</body>
+</html>
