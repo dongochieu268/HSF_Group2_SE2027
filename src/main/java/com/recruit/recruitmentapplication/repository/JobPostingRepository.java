@@ -69,17 +69,28 @@ public interface JobPostingRepository extends JpaRepository<JobPosting, Long> {
     @Query("SELECT DISTINCT jp FROM JobPosting jp LEFT JOIN FETCH jp.requiredSkills ORDER BY jp.id")
     List<JobPosting> findAllWithRequiredSkills();
 
-    @Query("SELECT jp FROM JobPosting jp JOIN FETCH jp.company LEFT JOIN FETCH jp.createdBy ORDER BY jp.postedDate DESC, jp.id DESC")
-    List<JobPosting> findAllManagedJobs();
-
     @Query("""
             SELECT jp FROM JobPosting jp
             JOIN FETCH jp.company
             LEFT JOIN FETCH jp.createdBy
-            WHERE jp.createdBy.id = :userId
+            WHERE (:ownerId IS NULL OR jp.createdBy.id = :ownerId)
+              AND (:status IS NULL OR jp.status = :status)
+              AND (:department IS NULL OR jp.department = :department)
+              AND (:keyword IS NULL OR LOWER(jp.title) LIKE LOWER(CONCAT('%', :keyword, '%')))
             ORDER BY jp.postedDate DESC, jp.id DESC
             """)
-    List<JobPosting> findManagedJobsByOwner(@Param("userId") Long userId);
+    List<JobPosting> findManagedJobsFiltered(@Param("ownerId") Long ownerId,
+                                              @Param("status") JobPosting.PostingStatus status,
+                                              @Param("department") String department,
+                                              @Param("keyword") String keyword);
+
+    @Query("SELECT DISTINCT jp.department FROM JobPosting jp "
+            + "WHERE (:ownerId IS NULL OR jp.createdBy.id = :ownerId) ORDER BY jp.department")
+    List<String> findManagedDepartments(@Param("ownerId") Long ownerId);
+
+    @Query("SELECT COUNT(jp) FROM JobPosting jp WHERE jp.status = :status "
+            + "AND (:ownerId IS NULL OR jp.createdBy.id = :ownerId)")
+    long countManagedByStatus(@Param("status") JobPosting.PostingStatus status, @Param("ownerId") Long ownerId);
 
     @Query("SELECT DISTINCT jp FROM JobPosting jp JOIN jp.requiredSkills s WHERE s.name = :skillName")
     List<JobPosting> findByRequiredSkillName(@Param("skillName") String skillName);

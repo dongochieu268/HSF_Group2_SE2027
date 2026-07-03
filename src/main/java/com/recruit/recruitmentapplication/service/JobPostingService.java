@@ -68,12 +68,46 @@ public class JobPostingService {
     }
 
     @Transactional(readOnly = true)
-    public List<JobPosting> findManagedJobs(SessionUser user) {
+    public List<JobPosting> findManagedJobs(SessionUser user, JobPosting.PostingStatus status, String department,
+                                             String keyword) {
         ensureManagerRole(user);
-        if (Role.ADMIN.equals(user.getRoleName())) {
-            return jobPostingRepository.findAllManagedJobs();
+        Long ownerId = managedOwnerId(user);
+        return jobPostingRepository.findManagedJobsFiltered(ownerId, status, trimToNull(department),
+                trimToNull(keyword));
+    }
+
+    @Transactional(readOnly = true)
+    public List<String> findManagedDepartments(SessionUser user) {
+        ensureManagerRole(user);
+        return jobPostingRepository.findManagedDepartments(managedOwnerId(user));
+    }
+
+    @Transactional(readOnly = true)
+    public Map<String, Long> countManagedByStatus(SessionUser user) {
+        ensureManagerRole(user);
+        Long ownerId = managedOwnerId(user);
+        Map<String, Long> counts = new LinkedHashMap<>();
+        long total = 0;
+        for (JobPosting.PostingStatus status : JobPosting.PostingStatus.values()) {
+            long count = jobPostingRepository.countManagedByStatus(status, ownerId);
+            counts.put(status.name(), count);
+            total += count;
         }
-        return jobPostingRepository.findManagedJobsByOwner(user.getId());
+        counts.put("ALL", total);
+        return counts;
+    }
+
+    @Transactional(readOnly = true)
+    public Map<Long, Long> countApplicationsFor(List<JobPosting> jobs) {
+        Map<Long, Long> counts = new LinkedHashMap<>();
+        for (JobPosting job : jobs) {
+            counts.put(job.getId(), applicationRepository.countByJobPosting_Id(job.getId()));
+        }
+        return counts;
+    }
+
+    private Long managedOwnerId(SessionUser user) {
+        return Role.ADMIN.equals(user.getRoleName()) ? null : user.getId();
     }
 
     @Transactional(readOnly = true)
