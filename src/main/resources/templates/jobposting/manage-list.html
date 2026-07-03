@@ -12,32 +12,69 @@
         </div>
         <a class="button" th:href="@{/manage/jobs/new}">Create New Job</a>
     </div>
-    <div class="table-wrap">
-        <table>
-            <thead>
-            <tr>
-                <th>Title</th>
-                <th>Department</th>
-                <th>Location</th>
-                <th>Status</th>
-                <th>Deadline</th>
-                <th></th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr th:each="job : ${jobs}">
-                <td><strong><a class="text-link" th:href="@{/manage/jobs/{id}(id=${job.id})}" th:text="${job.title}"></a></strong></td>
-                <td th:text="${job.department}"></td>
-                <td th:text="${job.location}"></td>
-                <td><span class="badge" th:text="${job.status}"></span></td>
-                <td th:text="${job.deadline ?: '-'}"></td>
-                <td><a class="button button-secondary button-small" th:href="@{/manage/jobs/{id}(id=${job.id})}">Open</a></td>
-            </tr>
-            <tr th:if="${#lists.isEmpty(jobs)}">
-                <td colspan="6" class="empty-cell">No job postings match your access scope.</td>
-            </tr>
-            </tbody>
-        </table>
+
+    <div class="tab-bar">
+        <a class="tab-link" th:classappend="${statusFilter == null or #strings.isEmpty(statusFilter)} ? ' tab-active' : ''"
+           th:href="@{/manage/jobs(department=${departmentFilter}, keyword=${keyword})}">
+            All (<span th:text="${statusCounts.get('ALL')}"></span>)</a>
+        <a class="tab-link" th:classappend="${statusFilter == 'DRAFT'} ? ' tab-active' : ''"
+           th:href="@{/manage/jobs(status='DRAFT', department=${departmentFilter}, keyword=${keyword})}">
+            Draft (<span th:text="${statusCounts.get('DRAFT')}"></span>)</a>
+        <a class="tab-link" th:classappend="${statusFilter == 'ACTIVE'} ? ' tab-active' : ''"
+           th:href="@{/manage/jobs(status='ACTIVE', department=${departmentFilter}, keyword=${keyword})}">
+            Active (<span th:text="${statusCounts.get('ACTIVE')}"></span>)</a>
+        <a class="tab-link" th:classappend="${statusFilter == 'CLOSED'} ? ' tab-active' : ''"
+           th:href="@{/manage/jobs(status='CLOSED', department=${departmentFilter}, keyword=${keyword})}">
+            Closed (<span th:text="${statusCounts.get('CLOSED')}"></span>)</a>
+    </div>
+
+    <form class="search-row filter-row" th:action="@{/manage/jobs}" method="get">
+        <input type="hidden" name="status" th:value="${statusFilter}">
+        <select class="form-control" name="department" onchange="this.form.submit()">
+            <option value="">All departments</option>
+            <option th:each="d : ${departments}" th:value="${d}" th:selected="${d == departmentFilter}" th:text="${d}"></option>
+        </select>
+        <input class="form-control" name="keyword" th:value="${keyword}" placeholder="Search by job title">
+        <button class="button" type="submit">Filter</button>
+    </form>
+
+    <div class="job-card-grid">
+        <div class="job-card" th:each="job : ${jobs}">
+            <div class="job-card-head">
+                <a class="text-link" th:href="@{/manage/jobs/{id}(id=${job.id})}" th:text="${job.title}"></a>
+                <span class="badge" th:classappend="'status-' + ${#strings.toLowerCase(job.status.name())}"
+                      th:text="${job.status.name()}"></span>
+            </div>
+            <p class="muted" th:text="${(job.department ?: '-') + ' · ' + (job.location ?: '-')}"></p>
+            <p class="job-card-meta">
+                <span th:text="'Applications: ' + ${applicationCounts.get(job.id)}"></span>
+                <span th:if="${job.deadline != null}" th:text="'Deadline: ' + ${job.deadline}"></span>
+            </p>
+            <div class="actions">
+                <a class="button button-secondary button-small"
+                   th:if="${job.status.name() == 'DRAFT' or job.status.name() == 'ACTIVE'}"
+                   th:href="@{/manage/jobs/{id}/edit(id=${job.id})}">Edit</a>
+
+                <form th:if="${job.status.name() == 'DRAFT'}" method="post"
+                      th:action="@{/manage/jobs/{id}/publish(id=${job.id})}"
+                      onsubmit="return confirm('Publish this job posting?')">
+                    <button class="button button-small" type="submit">Publish</button>
+                </form>
+
+                <form th:if="${job.status.name() == 'ACTIVE'}" method="post"
+                      th:action="@{/manage/jobs/{id}/close(id=${job.id})}"
+                      onsubmit="return confirm('Closing will stop accepting new applications. Existing applications are not affected.')">
+                    <button class="button button-secondary button-small" type="submit">Close</button>
+                </form>
+
+                <form th:if="${job.status.name() == 'DRAFT' and applicationCounts.get(job.id) == 0}" method="post"
+                      th:action="@{/manage/jobs/{id}/delete(id=${job.id})}"
+                      onsubmit="return confirm('Delete this draft job posting? This action cannot be undone.')">
+                    <button class="button button-danger button-small" type="submit">Delete</button>
+                </form>
+            </div>
+        </div>
+        <p th:if="${#lists.isEmpty(jobs)}" class="empty-cell">No job postings match your current filters.</p>
     </div>
 </main>
 <footer th:replace="~{layout/base :: footer}"></footer>

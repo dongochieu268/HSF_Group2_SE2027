@@ -122,11 +122,21 @@ th { background: #eef2f7; font-size: 14px; }
 .tab-links a { padding: 10px 14px; color: var(--brand); background: var(--surface); border: 1px solid var(--line); border-radius: 6px; font-weight: 700; text-decoration: none; }
 .tab-links a:hover { border-color: var(--brand); }
 
+.tab-bar { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+.tab-link { padding: 8px 14px; color: var(--muted); background: var(--surface); border: 1px solid var(--line); border-radius: 999px; text-decoration: none; font-weight: 700; font-size: 14px; }
+.tab-link.tab-active { color: #fff; background: var(--brand); border-color: var(--brand); }
+.filter-row select.form-control { max-width: 220px; }
+.job-card-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.job-card { padding: 18px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; display: flex; flex-direction: column; gap: 10px; }
+.job-card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+.job-card-meta { display: flex; flex-direction: column; gap: 3px; margin: 0; color: var(--muted); font-size: 14px; }
+
 @media (max-width: 800px) {
     .nav-row { align-items: flex-start; flex-direction: column; padding-block: 14px; }
     .module-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .detail-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .metric-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .job-card-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 @media (max-width: 520px) {
@@ -137,4 +147,5 @@ th { background: #eef2f7; font-size: 14px; }
     .form-grid-full { grid-column: auto; }
     .metric-strip { grid-template-columns: 1fr; }
     .pipeline-row { grid-template-columns: 1fr; gap: 6px; }
+    .job-card-grid { grid-template-columns: 1fr; }
 }

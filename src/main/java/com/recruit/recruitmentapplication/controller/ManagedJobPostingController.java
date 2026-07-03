@@ -8,6 +8,7 @@ import com.recruit.recruitmentapplication.service.JobPostingService;
 import com.recruit.recruitmentapplication.util.SessionConstants;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
+import java.util.List;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
 @RequestMapping("/manage/jobs")
@@ -29,12 +31,33 @@ public class ManagedJobPostingController {
     }
 
     @GetMapping
-    public String list(Model model, HttpSession session) {
+    public String list(@RequestParam(required = false) String status,
+                       @RequestParam(required = false) String department,
+                       @RequestParam(defaultValue = "") String keyword,
+                       Model model, HttpSession session) {
         try {
-            model.addAttribute("jobs", jobPostingService.findManagedJobs(current(session)));
+            SessionUser user = current(session);
+            JobPosting.PostingStatus statusFilter = parseStatusFilter(status);
+            List<JobPosting> jobs = jobPostingService.findManagedJobs(user, statusFilter, department, keyword);
+            model.addAttribute("jobs", jobs);
+            model.addAttribute("statusFilter", status);
+            model.addAttribute("departmentFilter", department);
+            model.addAttribute("keyword", keyword);
+            model.addAttribute("departments", jobPostingService.findManagedDepartments(user));
+            model.addAttribute("statusCounts", jobPostingService.countManagedByStatus(user));
+            model.addAttribute("applicationCounts", jobPostingService.countApplicationsFor(jobs));
             return "jobposting/manage-list";
         } catch (IllegalArgumentException exception) {
             return "redirect:/error/403";
+        }
+    }
+
+    private JobPosting.PostingStatus parseStatusFilter(String status) {
+        if (status == null || status.isBlank()) return null;
+        try {
+            return JobPosting.PostingStatus.valueOf(status);
+        } catch (IllegalArgumentException exception) {
+            return null;
         }
     }
 
