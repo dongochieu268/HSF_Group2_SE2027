@@ -154,6 +154,25 @@ class PhaseFourJobPostingWebTests {
                 .andExpect(status().isOk());
     }
 
+    @Test
+    void hrManagerOnlySeesOwnJobsInManagedListButAdminSeesAll() throws Exception {
+        MockHttpSession otherHr = new MockHttpSession();
+        otherHr.setAttribute(SessionConstants.LOGGED_IN_USER,
+                new SessionUser(999L, "otherhr", "Other HR", Role.HR_MANAGER));
+
+        mockMvc.perform(get("/manage/jobs").session(otherHr))
+                .andExpect(status().isOk())
+                .andExpect(content().string(not(containsString("Senior Java Developer"))));
+
+        mockMvc.perform(get("/manage/jobs").session(session("hrmanager")))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Senior Java Developer")));
+
+        mockMvc.perform(get("/manage/jobs").session(session("admin")))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Senior Java Developer")));
+    }
+
     private MockHttpSession session(String username) {
         MockHttpSession session = new MockHttpSession();
         session.setAttribute(SessionConstants.LOGGED_IN_USER,

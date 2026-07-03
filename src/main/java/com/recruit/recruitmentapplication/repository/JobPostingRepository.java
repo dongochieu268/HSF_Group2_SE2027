@@ -73,7 +73,7 @@ public interface JobPostingRepository extends JpaRepository<JobPosting, Long> {
             SELECT jp FROM JobPosting jp
             JOIN FETCH jp.company
             LEFT JOIN FETCH jp.createdBy
-            WHERE (:ownerId IS NOT NULL OR jp.createdBy.id = :ownerId)
+            WHERE (:ownerId IS NULL OR jp.createdBy.id = :ownerId)
               AND (:status IS NULL OR jp.status = :status)
               AND (:department IS NULL OR jp.department = :department)
               AND (:keyword IS NULL OR LOWER(jp.title) LIKE LOWER(CONCAT('%', :keyword, '%')))
