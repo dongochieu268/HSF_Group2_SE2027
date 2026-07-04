@@ -19,7 +19,7 @@ public class ApplicationService {
         DISPLAY_STATUS.put(ApplicationStatus.SUBMITTED, "APPLIED");
         DISPLAY_STATUS.put(ApplicationStatus.APPLIED, "APPLIED");
         DISPLAY_STATUS.put(ApplicationStatus.UNDER_REVIEW, "SCREENING");
-        DISPLAY_STATUS.put(ApplicationStatus.SCREENING, "APPLIED");
+        DISPLAY_STATUS.put(ApplicationStatus.SCREENING, "SCREENING");
         DISPLAY_STATUS.put(ApplicationStatus.SHORTLISTED, "SCREENING");
         DISPLAY_STATUS.put(ApplicationStatus.INTERVIEW, "INTERVIEW");
         DISPLAY_STATUS.put(ApplicationStatus.INTERVIEW_SCHEDULED, "INTERVIEW");
