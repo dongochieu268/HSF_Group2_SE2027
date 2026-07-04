@@ -41,7 +41,7 @@
             </thead>
             <tbody>
             <tr th:each="app : ${applications}">
-                <td><a class="text-link" th:href="@{/manage/jobs/{id}(id=${app.jobPosting.id})}" th:text="${app.jobPosting.title}"></a></td>
+                <td><a class="text-link" th:href="@{/jobs/{id}(id=${app.jobPosting.id})}" th:text="${app.jobPosting.title}"></a></td>
                 <td th:text="${app.jobPosting.department ?: '-'}"></td>
                 <td th:text="${#temporals.format(app.appliedAt, 'dd/MM/yyyy')}"></td>
                 <td>
