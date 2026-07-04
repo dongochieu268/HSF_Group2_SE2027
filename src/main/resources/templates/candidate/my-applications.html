@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/base :: head('Đơn ứng tuyển của tôi')}"></head>
+<body>
+<header th:replace="~{layout/base :: header}"></header>
+<main class="container page-content">
+    <div class="page-heading">
+        <p class="eyebrow">Candidate Portal</p>
+        <h1>My Applications</h1>
+    </div>
+
+    <div class="tab-bar">
+        <a class="tab-link" th:classappend="${statusFilter == null or #strings.isEmpty(statusFilter)} ? ' tab-active' : ''"
+           th:href="@{/my-applications}">All (<span th:text="${statusCounts.get('ALL')}"></span>)</a>
+        <a class="tab-link" th:classappend="${statusFilter == 'APPLIED'} ? ' tab-active' : ''"
+           th:href="@{/my-applications(status='APPLIED')}">Applied (<span th:text="${statusCounts.get('APPLIED')}"></span>)</a>
+        <a class="tab-link" th:classappend="${statusFilter == 'SCREENING'} ? ' tab-active' : ''"
+           th:href="@{/my-applications(status='SCREENING')}">Screening (<span th:text="${statusCounts.get('SCREENING')}"></span>)</a>
+        <a class="tab-link" th:classappend="${statusFilter == 'INTERVIEW'} ? ' tab-active' : ''"
+           th:href="@{/my-applications(status='INTERVIEW')}">Interview (<span th:text="${statusCounts.get('INTERVIEW')}"></span>)</a>
+        <a class="tab-link" th:classappend="${statusFilter == 'OFFER'} ? ' tab-active' : ''"
+           th:href="@{/my-applications(status='OFFER')}">Offer (<span th:text="${statusCounts.get('OFFER')}"></span>)</a>
+        <a class="tab-link" th:classappend="${statusFilter == 'HIRED'} ? ' tab-active' : ''"
+           th:href="@{/my-applications(status='HIRED')}">Hired (<span th:text="${statusCounts.get('HIRED')}"></span>)</a>
+        <a class="tab-link" th:classappend="${statusFilter == 'REJECTED'} ? ' tab-active' : ''"
+           th:href="@{/my-applications(status='REJECTED')}">Rejected (<span th:text="${statusCounts.get('REJECTED')}"></span>)</a>
+        <a class="tab-link" th:classappend="${statusFilter == 'WITHDRAWN'} ? ' tab-active' : ''"
+           th:href="@{/my-applications(status='WITHDRAWN')}">Withdrawn (<span th:text="${statusCounts.get('WITHDRAWN')}"></span>)</a>
+    </div>
+
+    <div class="table-wrap" th:if="${not #lists.isEmpty(applications)}">
+        <table>
+            <thead>
+            <tr>
+                <th>Job title</th>
+                <th>Department</th>
+                <th>Submitted date</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="app : ${applications}">
+                <td><a class="text-link" th:href="@{/jobs/{id}(id=${app.jobPosting.id})}" th:text="${app.jobPosting.title}"></a></td>
+                <td th:text="${app.jobPosting.department ?: '-'}"></td>
+                <td th:text="${#temporals.format(app.appliedAt, 'dd/MM/yyyy')}"></td>
+                <td>
+                    <span class="badge status-badge"
+                          th:classappend="'status-' + ${#strings.toLowerCase(T(com.recruit.recruitmentapplication.service.ApplicationService).displayStatus(app.status))}"
+                          th:text="${T(com.recruit.recruitmentapplication.service.ApplicationService).displayStatus(app.status)}"></span>
+                </td>
+                <td>
+                    <form th:if="${T(com.recruit.recruitmentapplication.service.ApplicationService).canWithdraw(app.status)}"
+                          method="post" th:action="@{/my-applications/{id}/withdraw(id=${app.id})}"
+                          onsubmit="return confirm('Rút đơn ứng tuyển này? Hành động này không thể hoàn tác.')">
+                        <button class="button button-secondary button-small" type="submit">Withdraw</button>
+                    </form>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <p class="empty-cell" th:if="${#lists.isEmpty(applications) and statusCounts.get('ALL') == 0}">
+        You haven't applied for any positions yet.
+        <a class="text-link" th:href="@{/jobs}">Browse Open Positions</a>
+    </p>
+    <p class="empty-cell" th:if="${#lists.isEmpty(applications) and statusCounts.get('ALL') > 0}">
+        No applications at this stage.
+    </p>
+</main>
+<footer th:replace="~{layout/base :: footer}"></footer>
+</body>
+</html>

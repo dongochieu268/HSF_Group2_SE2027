@@ -104,6 +104,13 @@ th { background: #eef2f7; font-size: 14px; }
 .status-draft { color: #854a0e; background: #fef0c7; }
 .status-active { color: #05603a; background: #dcfae6; }
 .status-closed { color: #344054; background: #eaecf0; }
+.status-applied { color: #075985; background: #e0f2fe; }
+.status-screening { color: #854a0e; background: #fef9c3; }
+.status-interview { color: #6b21a8; background: #f3e8ff; }
+.status-offer { color: #0f766e; background: #ccfbf1; }
+.status-hired { color: #05603a; background: #dcfae6; }
+.status-rejected { color: #991b1b; background: #fee2e2; }
+.status-withdrawn { color: #344054; background: #eaecf0; }
 .metric-strip { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-bottom: 24px; }
 .metric-strip > div { padding: 16px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; }
 .metric-strip span { display: block; color: var(--muted); font-size: 13px; font-weight: 700; }
