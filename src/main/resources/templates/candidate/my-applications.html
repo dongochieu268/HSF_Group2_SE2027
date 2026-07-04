@@ -61,11 +61,11 @@
         </table>
     </div>
 
-    <p class="empty-cell" th:if="${#lists.isEmpty(applications) and statusFilter != null and not #strings.isEmpty(statusFilter)}">
+    <p class="empty-cell" th:if="${#lists.isEmpty(applications) and statusCounts.get('ALL') == 0}">
         You haven't applied for any positions yet.
         <a class="text-link" th:href="@{/jobs}">Browse Open Positions</a>
     </p>
-    <p class="empty-cell" th:if="${#lists.isEmpty(applications) and (statusFilter == null or #strings.isEmpty(statusFilter))}">
+    <p class="empty-cell" th:if="${#lists.isEmpty(applications) and statusCounts.get('ALL') > 0}">
         No applications at this stage.
     </p>
 </main>
