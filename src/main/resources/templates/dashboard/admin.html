@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/base :: head('Admin Dashboard')}"></head>
+<body>
+<header th:replace="~{layout/base :: header}"></header>
+
+<main class="container page-content">
+    <div class="page-heading heading-row">
+        <div>
+            <p class="eyebrow">System Admin</p>
+            <h1>Admin Dashboard</h1>
+        </div>
+        <div class="actions">
+            <!-- Nút điều hướng theo Navigation Flow -->
+            <a class="button button-secondary" th:href="@{/admin/users}">Manage Users</a>
+            <a class="button button-secondary" th:href="@{/admin/activity-log}">View Activity Log</a>
+        </div>
+    </div>
+
+    <!-- System Accounts Overview -->
+    <div class="module-grid" style="margin-bottom: 32px;">
+        <!-- Card: Total Users -->
+        <article class="module-card">
+            <h2>Total Users</h2>
+            <p style="font-size: 28px; font-weight: bold; color: var(--brand); margin-bottom: 8px;" th:text="${totalUsers}">0</p>
+            <div style="font-size: 13px; color: var(--muted);">
+                <div th:each="entry : ${usersByRole}">
+                    <strong th:text="${entry.key}">Role</strong>: <span th:text="${entry.value}">0</span>
+                </div>
+            </div>
+        </article>
+
+        <!-- Card: Locked Accounts (Chỉ hiện khi số lượng > 0) -->
+        <article class="module-card" th:if="${lockedCount > 0}">
+            <h2>Locked Accounts</h2>
+            <p style="font-size: 28px; font-weight: bold; color: #b42318; margin-bottom: 8px;" th:text="${lockedCount}">0</p>
+            <a th:href="@{/admin/users(status='Locked')}" class="text-link" style="font-size: 13px;">Review accounts &rarr;</a>
+        </article>
+    </div>
+
+    <!-- Recruitment Summary -->
+    <h2 style="margin-bottom: 16px;">Recruitment Summary</h2>
+    <div class="module-grid" style="margin-bottom: 24px;">
+        <article class="module-card">
+            <h2>Active Jobs</h2>
+            <p style="font-size: 28px; font-weight: bold; color: var(--ink);" th:text="${activeJobsCount}">0</p>
+        </article>
+        <article class="module-card">
+            <h2>Awaiting Review</h2>
+            <p style="font-size: 28px; font-weight: bold; color: var(--ink);" th:text="${awaitingReviewCount}">0</p>
+        </article>
+        <article class="module-card">
+            <h2>Upcoming Interviews</h2>
+            <p style="font-size: 28px; font-weight: bold; color: var(--ink);" th:text="${upcomingInterviewsCount}">0</p>
+            <p style="font-size: 13px; color: var(--muted);">Next 7 days</p>
+        </article>
+    </div>
+
+    <!-- Data Tables: Active Jobs & Recent Activity -->
+    <div class="form-grid" style="gap: 24px;">
+        <!-- Table: Active Jobs -->
+        <div>
+            <h3 style="margin-bottom: 12px;">Active Job Postings</h3>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>Job Title</th>
+                        <th>Company</th>
+                        <th>Applications</th>
+                        <th>Deadline</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="job : ${activeJobs}">
+                        <td><a class="text-link" th:href="@{/jobs/{id}(id=${job.id})}" th:text="${job.title}"></a></td>
+                        <td th:text="${job.company.name}"></td>
+                        <td th:text="${#lists.size(job.applications)}"></td>
+                        <td th:text="${job.deadline != null ? job.deadline : '-'}"></td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(activeJobs)}">
+                        <td colspan="4" class="empty-cell">
+                            You have no active job postings. <a th:href="@{/jobs/new}" class="text-link">Create one</a>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Table: Recent Activity Summary -->
+        <div>
+            <h3 style="margin-bottom: 12px;">Recent Activity</h3>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>Time</th>
+                        <th>Actor</th>
+                        <th>Event</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="log : ${recentActivities}">
+                        <td th:text="${#temporals.format(log.createdAt, 'dd/MM HH:mm')}" style="white-space: nowrap;"></td>
+                        <td th:text="${log.actorUsername}"></td>
+                        <td><span class="badge" th:text="${log.eventType}"></span></td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(recentActivities)}">
+                        <td colspan="3" class="empty-cell">No activity recorded yet.</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{layout/base :: footer}"></footer>
+</body>
+</html>

@@ -13,6 +13,7 @@
         <a class="brand" th:href="@{/}">Recruitment Web System</a>
         <nav aria-label="Điều hướng chính">
             <a th:href="@{/}">Trang chủ</a>
+            <a th:if="${session.loggedInUser != null and (session.loggedInUser.roleName == 'ADMIN')}" th:href="@{/admin/dashboard}">Dashboard</a>
             <a th:href="@{/companies}">Công ty</a>
             <a th:href="@{/jobs}">Việc làm</a>
             <a th:if="${session.loggedInUser != null and session.loggedInUser.roleName == 'CANDIDATE'}" th:href="@{/candidates/me}">Hồ sơ của tôi</a>
