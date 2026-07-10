@@ -1,20 +1,28 @@
 package com.recruit.recruitmentapplication.service;
 
+import com.recruit.recruitmentapplication.dto.CandidateReportRow;
 import com.recruit.recruitmentapplication.dto.JobPostingForm;
 import com.recruit.recruitmentapplication.dto.PipelineStageSummary;
 import com.recruit.recruitmentapplication.dto.SessionUser;
 import com.recruit.recruitmentapplication.entity.Application;
+import com.recruit.recruitmentapplication.entity.ApplicationStatusHistory;
 import com.recruit.recruitmentapplication.entity.Company;
+import com.recruit.recruitmentapplication.entity.Interview;
 import com.recruit.recruitmentapplication.entity.JobPosting;
 import com.recruit.recruitmentapplication.entity.Role;
 import com.recruit.recruitmentapplication.entity.User;
 import com.recruit.recruitmentapplication.repository.ApplicationRepository;
+import com.recruit.recruitmentapplication.repository.ApplicationStatusHistoryRepository;
 import com.recruit.recruitmentapplication.repository.CompanyRepository;
 import com.recruit.recruitmentapplication.repository.JobPostingRepository;
 import com.recruit.recruitmentapplication.repository.SkillRepository;
 import com.recruit.recruitmentapplication.repository.UserRepository;
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -29,15 +37,18 @@ public class JobPostingService {
     private final SkillRepository skillRepository;
     private final UserRepository userRepository;
     private final ApplicationRepository applicationRepository;
+    private final ApplicationStatusHistoryRepository statusHistoryRepository;
 
     public JobPostingService(JobPostingRepository jobPostingRepository, CompanyRepository companyRepository,
                              SkillRepository skillRepository, UserRepository userRepository,
-                             ApplicationRepository applicationRepository) {
+                             ApplicationRepository applicationRepository,
+                             ApplicationStatusHistoryRepository statusHistoryRepository) {
         this.jobPostingRepository = jobPostingRepository;
         this.companyRepository = companyRepository;
         this.skillRepository = skillRepository;
         this.userRepository = userRepository;
         this.applicationRepository = applicationRepository;
+        this.statusHistoryRepository = statusHistoryRepository;
     }
 
     @Transactional(readOnly = true)
@@ -150,6 +161,31 @@ public class JobPostingService {
             summaries.add(new PipelineStageSummary(entry.getKey(), entry.getValue(), percentage));
         }
         return summaries;
+    }
+
+    @Transactional(readOnly = true)
+    public List<CandidateReportRow> buildCandidateReport(Long jobId) {
+        List<CandidateReportRow> rows = new ArrayList<>();
+        for (Application application : applicationRepository.findByJobWithCandidate(jobId)) {
+            String stage = pipelineBucket(application.getStatus());
+
+            LocalDateTime stageSince = statusHistoryRepository
+                    .findFirstByApplication_IdOrderByChangedAtDesc(application.getId())
+                    .map(ApplicationStatusHistory::getChangedAt)
+                    .orElse(application.getAppliedAt());
+            long daysInStage = stageSince == null
+                    ? 0
+                    : ChronoUnit.DAYS.between(stageSince.toLocalDate(), LocalDate.now());
+
+            String interviewerName = application.getInterviews().stream()
+                    .filter(interview -> interview.getScheduledAt() != null)
+                    .max(Comparator.comparing(Interview::getScheduledAt))
+                    .map(Interview::getInterviewerName)
+                    .orElse(null);
+
+            rows.add(new CandidateReportRow(application.getCandidate().getName(), stage, daysInStage, interviewerName));
+        }
+        return rows;
     }
 
     @Transactional
