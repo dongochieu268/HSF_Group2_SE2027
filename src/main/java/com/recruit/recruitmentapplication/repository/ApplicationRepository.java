@@ -10,8 +10,20 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+
+import org.springframework.data.jpa.repository.EntityGraph;
+
+
 @Repository
 public interface ApplicationRepository extends JpaRepository<Application, Long> {
+    @EntityGraph(attributePaths = {
+            "candidate",
+            "candidate.profile",
+            "jobPosting",
+            "jobPosting.company",
+            "interviews"
+    })
+    Optional<Application> findWithDetailsById(Long id);
     List<Application> findByCandidate_Id(Long candidateId);
 
     List<Application> findByJobPosting_Id(Long jobPostingId);

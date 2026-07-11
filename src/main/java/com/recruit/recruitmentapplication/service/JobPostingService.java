@@ -80,7 +80,7 @@ public class JobPostingService {
 
     @Transactional(readOnly = true)
     public List<JobPosting> findManagedJobs(SessionUser user, JobPosting.PostingStatus status, String department,
-                                             String keyword) {
+                                            String keyword) {
         ensureManagerRole(user);
         Long ownerId = managedOwnerId(user);
         return jobPostingRepository.findManagedJobsFiltered(ownerId, status, trimToNull(department),
@@ -180,7 +180,8 @@ public class JobPostingService {
             String interviewerName = application.getInterviews().stream()
                     .filter(interview -> interview.getScheduledAt() != null)
                     .max(Comparator.comparing(Interview::getScheduledAt))
-                    .map(Interview::getInterviewerName)
+                    .map(Interview::getInterviewer)
+                    .map(com.recruit.recruitmentapplication.entity.User::getFullName)
                     .orElse(null);
 
             rows.add(new CandidateReportRow(application.getCandidate().getName(), stage, daysInStage, interviewerName));

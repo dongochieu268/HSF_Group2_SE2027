@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/base :: head('Phỏng vấn của tôi')}"></head>
+<body>
+<header th:replace="~{layout/base :: header}"></header>
+<main class="container page-content">
+    <div class="page-heading">
+        <h1>Phỏng vấn của tôi</h1>
+        <p>Danh sách các buổi phỏng vấn được phân công cho bạn.</p>
+    </div>
+
+    <section class="detail-panel">
+        <p class="empty-cell" th:if="${#lists.isEmpty(interviews)}">Bạn chưa được phân công phỏng vấn nào.</p>
+
+        <table class="table" th:if="${not #lists.isEmpty(interviews)}">
+            <thead>
+            <tr>
+                <th>Ứng viên</th>
+                <th>Vị trí</th>
+                <th>Thời gian</th>
+                <th>Loại phỏng vấn</th>
+                <th>Kết quả</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="iv : ${interviews}">
+                <td th:text="${iv.application.candidate.name}"></td>
+                <td th:text="${iv.application.jobPosting.title}"></td>
+                <td th:text="${#temporals.format(iv.scheduledAt, 'dd/MM/yyyy HH:mm')}"></td>
+                <td th:text="${iv.interviewType}"></td>
+                <td><span class="badge" th:text="${iv.result}"></span></td>
+                <td><a class="button" th:href="@{/interviews/{id}/evaluate(id=${iv.id})}">Đánh giá</a></td>
+            </tr>
+            </tbody>
+        </table>
+    </section>
+</main>
+<footer th:replace="~{layout/base :: footer}"></footer>
+</body>
+</html>
