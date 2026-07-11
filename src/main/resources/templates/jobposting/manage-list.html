@@ -47,7 +47,8 @@
             </div>
             <p class="muted" th:text="${(job.department ?: '-') + ' · ' + (job.location ?: '-')}"></p>
             <p class="job-card-meta">
-                <span th:text="'Applications: ' + ${applicationCounts.get(job.id)}"></span>
+                <a class="text-link" th:href="@{/manage/jobs/{id}/applications(id=${job.id})}"
+                   th:text="'Applications: ' + ${applicationCounts.get(job.id)}"></a>
                 <span th:if="${job.deadline != null}" th:text="'Deadline: ' + ${job.deadline}"></span>
             </p>
             <div class="actions">

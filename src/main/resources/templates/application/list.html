@@ -4,8 +4,49 @@
 <body>
 <header th:replace="~{layout/base :: header}"></header>
 <main class="container page-content">
-    <section class="placeholder"><h1>Danh sách đơn ứng tuyển</h1>
-        <p>Nghiệp vụ application được hoàn thiện ở phase sau.</p></section>
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+        <a th:href="@{/manage/jobs}">Jobs</a>
+        <span>/</span>
+        <a th:href="@{/manage/jobs/{id}(id=${job.id})}" th:text="${job.title}"></a>
+        <span>/</span>
+        <span>Applications</span>
+    </nav>
+
+    <div class="page-heading heading-row">
+        <div>
+            <p class="eyebrow" th:text="${job.department}"></p>
+            <h1 th:text="'Đơn ứng tuyển cho ' + ${job.title}"></h1>
+            <p th:text="${job.company.name}"></p>
+        </div>
+        <a class="button button-secondary" th:href="@{/manage/jobs/{id}(id=${job.id})}">Quay lại job</a>
+    </div>
+
+    <div class="table-wrap">
+        <table>
+            <thead>
+            <tr>
+                <th>Ứng viên</th>
+                <th>Ngày nộp</th>
+                <th>Trạng thái</th>
+                <th>Cover letter</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="app : ${applications}">
+                <td>
+                    <strong th:text="${app.candidate.name}"></strong>
+                    <div class="muted" th:text="${app.candidate.email}"></div>
+                </td>
+                <td th:text="${#temporals.format(app.appliedAt, 'yyyy-MM-dd HH:mm')}"></td>
+                <td><span class="badge" th:text="${T(com.recruit.recruitmentapplication.service.ApplicationService).displayStatus(app.status)}"></span></td>
+                <td th:text="${app.coverLetter ?: '-'}"></td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(applications)}">
+                <td colspan="4" class="empty-cell">Chưa có đơn ứng tuyển nào cho vị trí này.</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
 </main>
 <footer th:replace="~{layout/base :: footer}"></footer>
 </body>

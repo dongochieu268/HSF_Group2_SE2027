@@ -60,6 +60,11 @@ public class ApplicationService {
     }
 
     @Transactional(readOnly = true)
+    public List<Application> findByJob(Long jobId) {
+        return applicationRepository.findByJobWithCandidate(jobId);
+    }
+
+    @Transactional(readOnly = true)
     public Map<String, Long> countMyApplicationsByStatus(Long candidateId) {
         List<Application> all = applicationRepository.findByCandidate_Id(candidateId);
         Map<String, Long> counts = new LinkedHashMap<>();
