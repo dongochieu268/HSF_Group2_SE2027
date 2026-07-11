@@ -137,7 +137,7 @@ class PhaseTwoWebTests {
                         .param("username", "admin")
                         .param("password", "Admin@123"))
                 .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/admin/users"))
+                .andExpect(redirectedUrl("/admin/dashboard"))
                 .andExpect(request().sessionAttribute(SessionConstants.LOGGED_IN_USER,
                         org.hamcrest.Matchers.instanceOf(SessionUser.class)))
                 .andReturn();
