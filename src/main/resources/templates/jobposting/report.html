@@ -1,40 +1,40 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{layout/base :: head('Pipeline Report')}"></head>
+<head th:replace="~{layout/base :: head('Báo cáo Pipeline')}"></head>
 <body>
 <header th:replace="~{layout/base :: header}"></header>
 <main class="container page-content">
     <nav class="breadcrumb" aria-label="Breadcrumb">
-        <a th:if="${fromJobDetail}" th:href="@{/manage/jobs/{id}(id=${selectedJob.id})}">Job Detail</a>
+        <a th:if="${fromJobDetail}" th:href="@{/manage/jobs/{id}(id=${selectedJob.id})}">Chi tiết tin tuyển dụng</a>
         <!-- TODO(SCR-20): spec breadcrumb là "Dashboard" -> SCR-06; dự án chưa có route dashboard nên tạm trỏ về Jobs -->
-        <a th:unless="${fromJobDetail}" th:href="@{/manage/jobs}">Jobs</a>
+        <a th:unless="${fromJobDetail}" th:href="@{/manage/jobs}">Tin tuyển dụng</a>
         <span>/</span>
-        <span>Pipeline Report</span>
+        <span>Báo cáo Pipeline</span>
     </nav>
 
     <div class="page-heading">
-        <h1>Pipeline Report</h1>
+        <h1>Báo cáo Pipeline</h1>
         <p class="muted" th:if="${selectedJob != null}" th:text="${selectedJob.title}"></p>
     </div>
 
     <form th:if="${!fromJobDetail && !#lists.isEmpty(jobs)}" method="get" th:action="@{/manage/reports}" class="filter-bar">
-        <label for="jobId">Job posting</label>
+        <label for="jobId">Tin tuyển dụng</label>
         <select id="jobId" name="jobId" onchange="this.form.submit()">
             <option th:each="j : ${jobs}" th:value="${j.id}" th:text="${j.title}"
                     th:selected="${selectedJob != null && j.id == selectedJob.id}"></option>
         </select>
     </form>
 
-    <p class="empty-cell" th:if="${selectedJob == null}">You have no job postings to report on.</p>
+    <p class="empty-cell" th:if="${selectedJob == null}">Bạn chưa có tin tuyển dụng nào để lập báo cáo.</p>
 
     <th:block th:if="${selectedJob != null}">
-        <p class="empty-cell" th:if="${applicationCount == 0}">No applications have been received for this job posting yet.</p>
+        <p class="empty-cell" th:if="${applicationCount == 0}">Tin tuyển dụng này chưa nhận được đơn ứng tuyển nào.</p>
 
         <th:block th:if="${applicationCount > 0}">
             <section class="detail-panel pipeline-panel">
                 <div class="section-title-row">
-                    <h2>Pipeline stage breakdown</h2>
-                    <span class="badge" th:text="${applicationCount + ' applications'}"></span>
+                    <h2>Phân bổ theo giai đoạn pipeline</h2>
+                    <span class="badge" th:text="${applicationCount + ' đơn ứng tuyển'}"></span>
                 </div>
                 <div class="pipeline-list">
                     <div class="pipeline-row" th:each="stage : ${pipelineStages}">
@@ -48,14 +48,14 @@
             </section>
 
             <section class="detail-panel">
-                <h2>Candidates</h2>
+                <h2>Ứng viên</h2>
                 <table class="data-table">
                     <thead>
                     <tr>
-                        <th>Candidate</th>
-                        <th>Current stage</th>
-                        <th>Days in stage</th>
-                        <th>Interviewer</th>
+                        <th>Ứng viên</th>
+                        <th>Giai đoạn hiện tại</th>
+                        <th>Số ngày ở giai đoạn</th>
+                        <th>Người phỏng vấn</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -68,8 +68,7 @@
                     </tbody>
                 </table>
                 <!-- TODO(SCR-20 / FT-27 - Could priority): nút Export CSV/XLSX.
-                     Theo spec: nếu nhóm quyết định defer FT-27 thì KHÔNG render nút này (ẩn hẳn, không disable).
-                     Đây là quyết định scope của nhóm — ghi vào report. -->
+
             </section>
         </th:block>
     </th:block>

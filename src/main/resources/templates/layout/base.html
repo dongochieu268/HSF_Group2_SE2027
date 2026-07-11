@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head th:fragment="head(pageTitle)">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -11,39 +11,53 @@
 <header class="site-header" th:fragment="header">
     <div class="container nav-row">
         <a class="brand" th:href="@{/}">Recruitment Web System</a>
-        <nav aria-label="Điều hướng chính">
-            <a th:href="@{/}">Trang chủ</a>
-            <a th:if="${session.loggedInUser != null and (session.loggedInUser.roleName == 'ADMIN')}" th:href="@{/admin/dashboard}">Dashboard</a>
-            <a th:href="@{/companies}">Công ty</a>
-            <a th:href="@{/jobs}">Việc làm</a>
-            <a th:if="${session.loggedInUser != null and session.loggedInUser.roleName == 'CANDIDATE'}" th:href="@{/candidates/me}">Hồ sơ của tôi</a>
-            <a th:if="${session.loggedInUser != null and session.loggedInUser.roleName == 'CANDIDATE'}" th:href="@{/my-applications}">Đơn ứng tuyển của tôi</a>
-            <a th:if="${session.loggedInUser != null and (session.loggedInUser.roleName == 'ADMIN' or session.loggedInUser.roleName == 'HR_MANAGER')}" th:href="@{/candidates}">Ứng viên</a>
-            <a th:if="${session.loggedInUser?.roleName == 'ADMIN'}" th:href="@{/admin/users}">Quản lý người dùng</a>
-            <a th:if="${session.loggedInUser == null}" th:href="@{/auth/login}">Đăng nhập</a>
+        <nav aria-label="Main navigation">
+            <a th:href="@{/}">Home</a>
+            <a th:if="${session.loggedInUser != null and session.loggedInUser.roleName == 'ADMIN'}"
+               th:href="@{/admin/dashboard}">Dashboard</a>
+            <a th:if="${session.loggedInUser != null and session.loggedInUser.roleName == 'HR_MANAGER'}"
+               th:href="@{/hr/dashboard}">Dashboard</a>
+            <a th:href="@{/companies}">Companies</a>
+            <a th:if="${session.loggedInUser == null or session.loggedInUser.roleName == 'CANDIDATE'}"
+               th:href="@{/jobs}">Jobs</a>
+            <a th:if="${session.loggedInUser != null and (session.loggedInUser.roleName == 'ADMIN' or session.loggedInUser.roleName == 'HR_MANAGER')}"
+               th:href="@{/manage/jobs}">Jobs</a>
+            <a th:if="${session.loggedInUser != null and session.loggedInUser.roleName == 'CANDIDATE'}"
+               th:href="@{/candidates/me}">My Profile</a>
+            <a th:if="${session.loggedInUser != null and session.loggedInUser.roleName == 'CANDIDATE'}"
+               th:href="@{/my-applications}">My Applications</a>
+            <a th:if="${session.loggedInUser != null and (session.loggedInUser.roleName == 'ADMIN' or session.loggedInUser.roleName == 'HR_MANAGER')}"
+               th:href="@{/candidates}">Candidates</a>
+            <a th:if="${session.loggedInUser != null and (session.loggedInUser.roleName == 'ADMIN' or session.loggedInUser.roleName == 'HR_MANAGER')}"
+               th:href="@{/manage/reports}">Reports</a>
+            <a th:if="${session.loggedInUser != null and session.loggedInUser.roleName == 'INTERVIEWER'}"
+               th:href="@{/interviews}">My Interviews</a>
+            <a th:if="${session.loggedInUser?.roleName == 'ADMIN'}"
+               th:href="@{/admin/users}">Manage Users</a>
+            <a th:if="${session.loggedInUser == null}" th:href="@{/auth/login}">Login</a>
         </nav>
         <details class="user-menu" th:if="${session.loggedInUser != null}">
             <summary class="user-menu-trigger">
-                <span class="user-avatar" th:text="${#strings.substring(session.loggedInUser.fullName, 0, 1)}">N</span>
-                <span class="session-user" th:text="${session.loggedInUser.fullName}">Người dùng</span>
+                <span class="user-avatar" th:text="${#strings.substring(session.loggedInUser.fullName, 0, 1)}">U</span>
+                <span class="session-user" th:text="${session.loggedInUser.fullName}">User</span>
             </summary>
             <div class="user-menu-panel">
                 <p class="user-menu-role" th:text="${session.loggedInUser.roleName}">CANDIDATE</p>
-                <a th:href="@{/profile}">Tài khoản của tôi</a>
-                <a th:href="@{/profile/edit}">Chỉnh sửa hồ sơ</a>
-                <a th:href="@{/profile/password}">Đổi mật khẩu</a>
-                <a th:href="@{/auth/logout}">Đăng xuất</a>
+                <a th:href="@{/profile}">Profile</a>
+                <a th:href="@{/profile/edit}">Edit Profile</a>
+                <a th:href="@{/profile/password}">Change Password</a>
+                <a th:href="@{/auth/logout}">Logout</a>
             </div>
         </details>
     </div>
 </header>
 
 <div class="container page-content" th:fragment="content">
-    <p>Nội dung trang được đặt tại đây.</p>
+    <p>Page content goes here.</p>
 </div>
 
 <footer class="site-footer" th:fragment="footer">
-    <div class="container">Recruitment Web System · Spring MVC · Thymeleaf · SQL Server</div>
+    <div class="container">Recruitment Web System - Spring MVC - Thymeleaf - SQL Server</div>
 </footer>
 </body>
 </html>

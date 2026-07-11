@@ -31,8 +31,11 @@ public class Interview {
     @Column(name = "interview_type", length = 30)
     private InterviewType interviewType = InterviewType.TECHNICAL;
 
-    @Column(name = "interviewer_name", length = 100)
-    private String interviewerName;
+    // SCR-19: đổi từ String tự do sang FK thật tới User (role INTERVIEWER),
+    // để EvaluationService xác định đúng người đang đăng nhập có được nộp đánh giá hay không.
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "interviewer_id")
+    private User interviewer;
 
     @Column(length = 1000)
     private String notes;
@@ -44,10 +47,10 @@ public class Interview {
     public Interview() {
     }
 
-    public Interview(LocalDateTime scheduledAt, InterviewType interviewType, String interviewerName) {
+    public Interview(LocalDateTime scheduledAt, InterviewType interviewType, User interviewer) {
         this.scheduledAt = scheduledAt;
         this.interviewType = interviewType;
-        this.interviewerName = interviewerName;
+        this.interviewer = interviewer;
     }
 
     public Long getId() { return id; }
@@ -58,8 +61,8 @@ public class Interview {
     public void setScheduledAt(LocalDateTime value) { this.scheduledAt = value; }
     public InterviewType getInterviewType() { return interviewType; }
     public void setInterviewType(InterviewType value) { this.interviewType = value; }
-    public String getInterviewerName() { return interviewerName; }
-    public void setInterviewerName(String value) { this.interviewerName = value; }
+    public User getInterviewer() { return interviewer; }
+    public void setInterviewer(User value) { this.interviewer = value; }
     public String getNotes() { return notes; }
     public void setNotes(String value) { this.notes = value; }
     public InterviewResult getResult() { return result; }

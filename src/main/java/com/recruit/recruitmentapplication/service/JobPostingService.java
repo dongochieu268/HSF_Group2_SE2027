@@ -80,7 +80,7 @@ public class JobPostingService {
 
     @Transactional(readOnly = true)
     public List<JobPosting> findManagedJobs(SessionUser user, JobPosting.PostingStatus status, String department,
-                                             String keyword) {
+                                            String keyword) {
         ensureManagerRole(user);
         Long ownerId = managedOwnerId(user);
         return jobPostingRepository.findManagedJobsFiltered(ownerId, status, trimToNull(department),
@@ -119,6 +119,20 @@ public class JobPostingService {
 
     private Long managedOwnerId(SessionUser user) {
         return Role.ADMIN.equals(user.getRoleName()) ? null : user.getId();
+    }
+
+    @Transactional(readOnly = true)
+    public List<JobPosting> findManagedJobs(SessionUser user, String status) {
+        if (status == null || status.isBlank()) {
+            return findManagedJobs(user, null, null, "");
+        }
+        JobPosting.PostingStatus selectedStatus;
+        try {
+            selectedStatus = JobPosting.PostingStatus.valueOf(status.trim().toUpperCase());
+        } catch (RuntimeException exception) {
+            throw new IllegalArgumentException("Invalid job status filter");
+        }
+        return findManagedJobs(user, selectedStatus, null, "");
     }
 
     @Transactional(readOnly = true)
@@ -180,7 +194,8 @@ public class JobPostingService {
             String interviewerName = application.getInterviews().stream()
                     .filter(interview -> interview.getScheduledAt() != null)
                     .max(Comparator.comparing(Interview::getScheduledAt))
-                    .map(Interview::getInterviewerName)
+                    .map(Interview::getInterviewer)
+                    .map(com.recruit.recruitmentapplication.entity.User::getFullName)
                     .orElse(null);
 
             rows.add(new CandidateReportRow(application.getCandidate().getName(), stage, daysInStage, interviewerName));

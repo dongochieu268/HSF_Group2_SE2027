@@ -1,10 +1,15 @@
 package com.recruit.recruitmentapplication.controller;
 
+import com.recruit.recruitmentapplication.dto.SessionUser;
 import com.recruit.recruitmentapplication.dto.UserAccountForm;
 import com.recruit.recruitmentapplication.dto.UserRoleForm;
+import com.recruit.recruitmentapplication.entity.ActivityLog.ActivityEventType;
 import com.recruit.recruitmentapplication.entity.User.AccountStatus;
 import com.recruit.recruitmentapplication.entity.User;
+import com.recruit.recruitmentapplication.service.ActivityLogService;
 import com.recruit.recruitmentapplication.service.UserService;
+import com.recruit.recruitmentapplication.util.SessionConstants;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Map;
@@ -23,9 +28,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 @RequestMapping("/admin/users")
 public class UserController {
     private final UserService userService;
+    private final ActivityLogService activityLogService;
 
-    public UserController(UserService userService) {
+    public UserController(UserService userService, ActivityLogService activityLogService) {
         this.userService = userService;
+        this.activityLogService = activityLogService;
     }
 
     @GetMapping
@@ -43,13 +50,15 @@ public class UserController {
                              @RequestParam(defaultValue = "") String keyword,
                              @RequestParam(defaultValue = "") String role,
                              @RequestParam(defaultValue = "") String status,
-                             Model model) {
+                             Model model, HttpSession session) {
         if (result.hasErrors()) {
             prepareListModel(model, keyword, role, status, form);
             return "user/list";
         }
         try {
-            userService.createManagedAccount(form);
+            User created = userService.createManagedAccount(form);
+            activityLogService.log(ActivityEventType.ACCOUNT_CREATED, current(session),
+                    "Tạo tài khoản '" + created.getUsername() + "' (" + created.getRole().getName() + ")", null);
             return "redirect:/admin/users?created=true";
         } catch (IllegalArgumentException exception) {
             result.reject("userAccountForm.error", exception.getMessage());
@@ -65,9 +74,11 @@ public class UserController {
     }
 
     @PostMapping("/{id}/deactivate")
-    public String deactivate(@PathVariable Long id) {
+    public String deactivate(@PathVariable Long id, HttpSession session) {
         try {
-            userService.deactivate(id);
+            User target = userService.deactivate(id);
+            activityLogService.log(ActivityEventType.ACCOUNT_DEACTIVATED, current(session),
+                    "Vô hiệu hóa tài khoản '" + target.getUsername() + "'", null);
             return "redirect:/admin/users?deactivated=true";
         } catch (IllegalArgumentException exception) {
             return "redirect:/admin/users?error=last-admin";
@@ -75,8 +86,10 @@ public class UserController {
     }
 
     @PostMapping("/{id}/unlock")
-    public String unlock(@PathVariable Long id) {
-        userService.unlock(id);
+    public String unlock(@PathVariable Long id, HttpSession session) {
+        User target = userService.unlock(id);
+        activityLogService.log(ActivityEventType.ACCOUNT_UNLOCKED, current(session),
+                "Mở khóa tài khoản '" + target.getUsername() + "'", null);
         return "redirect:/admin/users?unlocked=true";
     }
 
@@ -106,6 +119,11 @@ public class UserController {
     public String delete(@PathVariable Long id) {
         userService.delete(id);
         return "redirect:/admin/users";
+    }
+
+    private User current(HttpSession session) {
+        SessionUser sessionUser = (SessionUser) session.getAttribute(SessionConstants.LOGGED_IN_USER);
+        return userService.findById(sessionUser.getId());
     }
 
     private void prepareListModel(Model model, String keyword, String role, String status, UserAccountForm form) {

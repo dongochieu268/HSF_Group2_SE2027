@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/base :: head('HR Dashboard')}"></head>
+<body>
+<header th:replace="~{layout/base :: header}"></header>
+<main class="container page-content">
+    <section aria-labelledby="dashboardTitle">
+        <div class="page-heading heading-row dashboard-heading">
+            <div>
+                <p class="eyebrow">Dashboard &amp; Reporting</p>
+                <h1 id="dashboardTitle">HR Dashboard</h1>
+                <p>Real-time recruitment activity for your active hiring workload.</p>
+            </div>
+            <a class="button" th:href="@{/manage/jobs/new}">Create New Job</a>
+        </div>
+
+        <section class="dashboard-metrics" aria-label="Recruitment metrics">
+            <a class="metric-card metric-card-link" th:href="@{/manage/jobs(status='ACTIVE')}"
+               data-metric="active-jobs" th:attr="data-value=${summary.activeJobsCount}">
+                <span>Active Jobs</span>
+                <strong th:text="${summary.activeJobsCount}">0</strong>
+            </a>
+            <a class="metric-card metric-card-link" th:href="@{/manage/jobs(applicationStatus='APPLIED')}"
+               data-metric="awaiting-review" th:attr="data-value=${summary.applicationsAwaitingReviewCount}">
+                <span>Applications Awaiting Review</span>
+                <strong th:text="${summary.applicationsAwaitingReviewCount}">0</strong>
+            </a>
+            <div class="metric-card" data-metric="upcoming-interviews"
+                 th:attr="data-value=${summary.upcomingInterviewsCount}">
+                <span>Upcoming Interviews</span>
+                <strong th:text="${summary.upcomingInterviewsCount}">0</strong>
+            </div>
+        </section>
+
+        <section class="dashboard-section" aria-labelledby="activeJobsTitle">
+            <div class="section-title-row">
+                <div>
+                    <h2 id="activeJobsTitle">Active Jobs</h2>
+                    <p class="muted">Sorted by most recent first.</p>
+                </div>
+                <a class="button button-secondary" th:href="@{/manage/jobs(status='ACTIVE')}">View Job List</a>
+            </div>
+
+            <div class="empty-state" th:if="${#lists.isEmpty(activeJobs)}">
+                <h3>No active jobs</h3>
+                <p>You have no active job postings. Create one to start receiving applications.</p>
+                <a class="button" th:href="@{/manage/jobs/new}">Create New Job</a>
+            </div>
+
+            <div class="table-wrap" th:if="${!#lists.isEmpty(activeJobs)}">
+                <table class="dashboard-table">
+                    <thead>
+                    <tr>
+                        <th>Job Title</th>
+                        <th>Department</th>
+                        <th>Application Count</th>
+                        <th>Deadline</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="job : ${activeJobs}">
+                        <td>
+                            <strong>
+                                <a class="text-link" th:href="@{/manage/jobs/{id}(id=${job.id})}" th:text="${job.title}">Job title</a>
+                            </strong>
+                        </td>
+                        <td th:text="${job.department}">Department</td>
+                        <td>
+                            <a class="text-link" th:href="@{/manage/jobs/{id}/applications(id=${job.id})}"
+                               th:text="${job.applicationCount}">0</a>
+                        </td>
+                        <td th:text="${job.deadline ?: '-'}">-</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </section>
+</main>
+<footer th:replace="~{layout/base :: footer}"></footer>
+</body>
+</html>

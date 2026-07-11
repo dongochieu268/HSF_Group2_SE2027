@@ -10,8 +10,20 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+
+import org.springframework.data.jpa.repository.EntityGraph;
+
+
 @Repository
 public interface ApplicationRepository extends JpaRepository<Application, Long> {
+    @EntityGraph(attributePaths = {
+            "candidate",
+            "candidate.profile",
+            "jobPosting",
+            "jobPosting.company",
+            "interviews"
+    })
+    Optional<Application> findWithDetailsById(Long id);
     List<Application> findByCandidate_Id(Long candidateId);
 
     List<Application> findByJobPosting_Id(Long jobPostingId);
@@ -19,6 +31,10 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
     Optional<Application> findByCandidate_IdAndJobPosting_Id(Long candidateId, Long jobPostingId);
 
     List<Application> findByStatus(Application.ApplicationStatus status);
+
+    long countByStatus(Application.ApplicationStatus status);
+
+    long countByStatusAndJobPosting_CreatedBy_Id(Application.ApplicationStatus status, Long userId);
 
     boolean existsByCandidate_IdAndJobPosting_Id(Long candidateId, Long jobPostingId);
 

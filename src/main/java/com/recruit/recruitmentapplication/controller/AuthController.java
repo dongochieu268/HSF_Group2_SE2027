@@ -3,10 +3,13 @@ package com.recruit.recruitmentapplication.controller;
 import com.recruit.recruitmentapplication.dto.LoginForm;
 import com.recruit.recruitmentapplication.dto.RegisterForm;
 import com.recruit.recruitmentapplication.dto.SessionUser;
+import com.recruit.recruitmentapplication.entity.ActivityLog.ActivityEventType;
 import com.recruit.recruitmentapplication.entity.Role;
 import com.recruit.recruitmentapplication.entity.User;
+import com.recruit.recruitmentapplication.service.ActivityLogService;
 import com.recruit.recruitmentapplication.service.UserService;
 import com.recruit.recruitmentapplication.util.SessionConstants;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import org.springframework.stereotype.Controller;
@@ -21,9 +24,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @RequestMapping("/auth")
 public class AuthController {
     private final UserService userService;
+    private final ActivityLogService activityLogService;
 
-    public AuthController(UserService userService) {
+    public AuthController(UserService userService, ActivityLogService activityLogService) {
         this.userService = userService;
+        this.activityLogService = activityLogService;
     }
 
     @GetMapping("/register")
@@ -47,7 +52,8 @@ public class AuthController {
             return "auth/register";
         }
         try {
-            userService.register(form);
+            User user = userService.register(form);
+            activityLogService.log(ActivityEventType.ACCOUNT_CREATED, user, "Tài khoản được tạo qua đăng ký", null);
             return "redirect:/auth/login?registered=true";
         } catch (IllegalArgumentException ex) {
             model.addAttribute("registrationError", ex.getMessage());
@@ -63,20 +69,26 @@ public class AuthController {
 
     @PostMapping("/login")
     public String processLogin(@Valid @ModelAttribute("loginForm") LoginForm form,
-                               BindingResult result, HttpSession session, Model model) {
+                               BindingResult result, HttpSession session, HttpServletRequest request, Model model) {
         if (result.hasErrors()) {
             return "auth/login";
         }
 
         User user = userService.authenticate(form.getUsername(), form.getPassword()).orElse(null);
         if (user == null) {
+            activityLogService.log(ActivityEventType.SIGN_IN_FAILURE, null,
+                    "Đăng nhập thất bại cho tài khoản '" + form.getUsername() + "'", request.getRemoteAddr());
             model.addAttribute("loginError", "Sai tài khoản, mật khẩu hoặc tài khoản đã bị khóa");
             return "auth/login";
         }
 
         session.setAttribute(SessionConstants.LOGGED_IN_USER, SessionUser.from(user));
+        activityLogService.log(ActivityEventType.SIGN_IN_SUCCESS, user, "Đăng nhập thành công", request.getRemoteAddr());
         if (Role.ADMIN.equals(user.getRole().getName())) {
             return "redirect:/admin/dashboard";
+        }
+        if (Role.HR_MANAGER.equals(user.getRole().getName())) {
+            return "redirect:/hr/dashboard";
         }
         if (Role.CANDIDATE.equals(user.getRole().getName())) {
             return "redirect:/my-applications";

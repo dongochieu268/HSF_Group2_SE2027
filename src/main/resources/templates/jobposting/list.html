@@ -1,32 +1,32 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{layout/base :: head('Jobs')}"></head>
+<head th:replace="~{layout/base :: head('Việc làm')}"></head>
 <body>
 <header th:replace="~{layout/base :: header}"></header>
 <main class="container page-content">
     <div class="page-heading heading-row">
         <div>
-            <p class="eyebrow">Open positions</p>
-            <h1>Open Positions</h1>
-            <p>Browse active job postings by title, department, company, and location.</p>
+            <p class="eyebrow">Vị trí đang tuyển</p>
+            <h1>Vị trí đang tuyển</h1>
+            <p>Tìm việc làm đang mở theo tên vị trí, phòng ban, công ty và địa điểm.</p>
         </div>
         <a class="button"
            th:if="${session.loggedInUser != null and (session.loggedInUser.roleName == 'ADMIN' or session.loggedInUser.roleName == 'HR_MANAGER')}"
-           th:href="@{/manage/jobs/new}">Create job</a>
+           th:href="@{/manage/jobs/new}">Tạo tin tuyển dụng</a>
     </div>
     <form class="search-row" th:action="@{/jobs}" method="get">
-        <input class="form-control" name="keyword" th:value="${keyword}" placeholder="Search by title">
-        <button class="button" type="submit">Search</button>
+        <input class="form-control" name="keyword" th:value="${keyword}" placeholder="Tìm theo tên vị trí">
+        <button class="button" type="submit">Tìm kiếm</button>
     </form>
     <div class="table-wrap">
         <table>
             <thead>
             <tr>
-                <th>Position</th>
-                <th>Company</th>
-                <th>Department</th>
-                <th>Location</th>
-                <th>Salary range</th>
+                <th>Vị trí</th>
+                <th>Công ty</th>
+                <th>Phòng ban</th>
+                <th>Địa điểm</th>
+                <th>Mức lương</th>
                 <th></th>
             </tr>
             </thead>
@@ -37,10 +37,10 @@
                 <td><span class="badge" th:text="${job.department}"></span></td>
                 <td th:text="${job.location}"></td>
                 <td th:text="${job.salaryRange ?: '-'}"></td>
-                <td><a class="button button-secondary button-small" th:href="@{/jobs/{id}(id=${job.id})}">Details</a></td>
+                <td><a class="button button-secondary button-small" th:href="@{/jobs/{id}(id=${job.id})}">Xem chi tiết</a></td>
             </tr>
             <tr th:if="${#lists.isEmpty(jobs)}">
-                <td colspan="6" class="empty-cell">No active job postings match your search.</td>
+                <td colspan="6" class="empty-cell">Không có tin tuyển dụng nào phù hợp với tìm kiếm của bạn.</td>
             </tr>
             </tbody>
         </table>

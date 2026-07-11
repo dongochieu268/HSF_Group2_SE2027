@@ -4,8 +4,176 @@
 <body>
 <header th:replace="~{layout/base :: header}"></header>
 <main class="container page-content">
-    <section class="placeholder"><h1>Chi tiết ứng tuyển</h1>
-        <p>Nội dung được hoàn thiện ở phase sau.</p></section>
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+        <a th:href="@{/manage/jobs}">Jobs</a>
+        <span>/</span>
+        <a th:href="@{/manage/jobs/{id}(id=${application.jobPosting.id})}" th:text="${application.jobPosting.title}"></a>
+        <span>/</span>
+        <span>Application #<span th:text="${application.id}"></span></span>
+    </nav>
+
+    <div class="page-heading heading-row">
+        <div>
+            <p class="eyebrow" th:text="${application.jobPosting.title}"></p>
+            <h1 th:text="${application.candidate.name}"></h1>
+            <p>
+                <span th:text="${application.candidate.email}"></span>
+                <span> · </span>
+                <span th:text="${application.candidate.phone ?: '-'}"></span>
+            </p>
+        </div>
+        <div class="actions">
+            <span class="badge status-badge" th:text="${displayStatus}"></span>
+        </div>
+    </div>
+
+    <div class="detail-layout">
+        <div class="detail-main">
+
+            <section class="detail-panel">
+                <h2>Thông tin ứng tuyển</h2>
+                <dl class="detail-grid">
+                    <div>
+                        <dt>Vị trí ứng tuyển</dt>
+                        <dd th:text="${application.jobPosting.title}"></dd>
+                    </div>
+                    <div>
+                        <dt>Công ty</dt>
+                        <dd th:text="${application.jobPosting.company != null ? application.jobPosting.company.name : '-'}"></dd>
+                    </div>
+                    <div>
+                        <dt>Ngày nộp đơn</dt>
+                        <dd th:text="${#temporals.format(application.appliedAt, 'dd/MM/yyyy HH:mm')}"></dd>
+                    </div>
+                    <div>
+                        <dt>Trạng thái chi tiết</dt>
+                        <dd th:text="${application.status}"></dd>
+                    </div>
+                    <div>
+                        <dt>Kinh nghiệm</dt>
+                        <dd th:text="${application.candidate.profile != null and application.candidate.profile.yearsOfExperience != null ? application.candidate.profile.yearsOfExperience + ' năm' : '-'}"></dd>
+                    </div>
+                    <div>
+                        <dt>Học vấn</dt>
+                        <dd th:text="${application.candidate.profile != null ? (application.candidate.profile.educationLevel ?: '-') : '-'}"></dd>
+                    </div>
+                </dl>
+                <div class="skill-list" th:if="${application.candidate.skills != null and not #sets.isEmpty(application.candidate.skills)}">
+                    <span class="badge skill-badge" th:each="s : ${application.candidate.skills}" th:text="${s.name}"></span>
+                </div>
+                <div class="read-block">
+                    <h3>Thư xin việc</h3>
+                    <p th:text="${application.coverLetter ?: 'Ứng viên không đính kèm thư xin việc.'}"></p>
+                </div>
+            </section>
+
+            <section class="detail-panel" aria-label="Hồ sơ đính kèm">
+                <h2>Hồ sơ đính kèm</h2>
+                <p class="empty-cell" th:if="${#lists.isEmpty(documents)}">Chưa có tài liệu nào được tải lên.</p>
+                <ul class="document-list" th:if="${not #lists.isEmpty(documents)}">
+                    <li th:each="doc : ${documents}">
+                        <span th:text="${doc.documentType}"></span>
+                        <span th:text="${doc.originalFileName}"></span>
+                        <span class="muted" th:text="${#temporals.format(doc.uploadedAt, 'dd/MM/yyyy HH:mm')}"></span>
+                    </li>
+                </ul>
+            </section>
+
+            <section class="detail-panel" aria-label="Ghi chú nội bộ">
+                <h2>Ghi chú nội bộ</h2>
+                <form th:if="${canManage}" th:action="@{/manage/applications/{id}/notes(id=${application.id})}" method="post" class="note-form">
+                    <div class="form-group form-grid-full">
+                        <label for="noteContent">Thêm ghi chú</label>
+                        <textarea class="form-control" id="noteContent" name="content" rows="3" required></textarea>
+                    </div>
+                    <button class="button" type="submit">Lưu ghi chú</button>
+                </form>
+                <p class="empty-cell" th:if="${#lists.isEmpty(notes)}">Chưa có ghi chú nào.</p>
+                <ul class="note-list" th:if="${not #lists.isEmpty(notes)}">
+                    <li th:each="n : ${notes}">
+                        <p th:text="${n.content}"></p>
+                        <span class="muted">
+                            <span th:text="${n.author != null ? n.author.fullName : 'Ẩn danh'}"></span>
+                            <span> · </span>
+                            <span th:text="${#temporals.format(n.createdAt, 'dd/MM/yyyy HH:mm')}"></span>
+                        </span>
+                    </li>
+                </ul>
+            </section>
+
+            <section class="detail-panel" aria-label="Lịch sử trạng thái">
+                <h2>Lịch sử trạng thái</h2>
+                <p class="empty-cell" th:if="${#lists.isEmpty(statusHistory)}">Chưa có thay đổi trạng thái nào được ghi nhận.</p>
+                <ul class="timeline" th:if="${not #lists.isEmpty(statusHistory)}">
+                    <li th:each="h : ${statusHistory}">
+                        <strong th:text="${(h.fromStatus ?: '—') + ' → ' + h.toStatus}"></strong>
+                        <span class="muted" th:text="${#temporals.format(h.changedAt, 'dd/MM/yyyy HH:mm')}"></span>
+                        <span th:if="${h.changedBy != null}" class="muted" th:text="'bởi ' + ${h.changedBy.fullName}"></span>
+                        <p th:if="${h.note != null and not #strings.isEmpty(h.note)}" th:text="${h.note}"></p>
+                    </li>
+                </ul>
+            </section>
+
+        </div>
+
+        <aside class="detail-sidebar" aria-label="Hành động">
+            <section class="detail-panel" th:if="${canManage}">
+                <h2>Đổi trạng thái</h2>
+                <form th:action="@{/manage/applications/{id}/status(id=${application.id})}" method="post">
+                    <div class="form-group">
+                        <label for="statusSelect">Trạng thái mới</label>
+                        <select class="form-control" id="statusSelect" name="status">
+                            <option th:each="s : ${statuses}" th:value="${s}" th:text="${s}"
+                                    th:selected="${s == application.status}"></option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="statusNote">Ghi chú (tuỳ chọn)</label>
+                        <input class="form-control" id="statusNote" name="note" type="text">
+                    </div>
+                    <button class="button" type="submit">Cập nhật trạng thái</button>
+                </form>
+            </section>
+
+            <section class="detail-panel" aria-label="Phỏng vấn">
+                <h2>Phỏng vấn</h2>
+                <p class="empty-cell" th:if="${#lists.isEmpty(application.interviews)}">Chưa có lịch phỏng vấn nào.</p>
+                <ul class="interview-list" th:if="${not #lists.isEmpty(application.interviews)}">
+                    <li th:each="iv : ${application.interviews}">
+                        <strong th:text="${iv.interviewType}"></strong>
+                        <span th:text="${#temporals.format(iv.scheduledAt, 'dd/MM/yyyy HH:mm')}"></span>
+                        <span class="badge" th:text="${iv.result}"></span>
+                        <span class="muted" th:if="${iv.interviewer != null}" th:text="'Người phỏng vấn: ' + ${iv.interviewer.fullName}"></span>
+                    </li>
+                </ul>
+
+                <form th:if="${canManage}" th:action="@{/manage/applications/{id}/interviews(id=${application.id})}"
+                      method="post" class="interview-form">
+                    <h3>Lên lịch phỏng vấn (SCR-18)</h3>
+                    <div class="form-group">
+                        <label for="scheduledAt">Thời gian</label>
+                        <input class="form-control" id="scheduledAt" name="scheduledAt" type="datetime-local" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="interviewType">Loại phỏng vấn</label>
+                        <select class="form-control" id="interviewType" name="interviewType">
+                            <option th:each="t : ${interviewTypes}" th:value="${t}" th:text="${t}"></option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="interviewerId">Người phỏng vấn</label>
+                        <select class="form-control" id="interviewerId" name="interviewerId">
+                            <option value="">-- Chọn interviewer --</option>
+                            <option th:each="u : ${interviewerAccounts}" th:value="${u.id}" th:text="${u.fullName}"></option>
+                        </select>
+                    </div>
+                    <button class="button" type="submit">Lên lịch</button>
+                </form>
+            </section>
+        </aside>
+    </div>
+
+    <a class="text-link" th:href="@{/manage/jobs/{id}/applications(id=${application.jobPosting.id})}">Quay lại danh sách đơn ứng tuyển</a>
 </main>
 <footer th:replace="~{layout/base :: footer}"></footer>
 </body>

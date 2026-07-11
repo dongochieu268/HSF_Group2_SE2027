@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{layout/base :: head(${editMode ? 'Sua tin tuyen dung' : 'Tao tin tuyen dung'})}"></head>
+<head th:replace="~{layout/base :: head(${editMode ? 'Sửa tin tuyển dụng' : 'Tạo tin tuyển dụng'})}"></head>
 <body>
 <header th:replace="~{layout/base :: header}"></header>
 <main class="container page-content">
     <div class="page-heading">
-        <p class="eyebrow">Job posting</p>
-        <h1 th:text="${editMode ? 'Sua tin tuyen dung' : 'Tao tin tuyen dung'}"></h1>
-        <p>Thong tin duoc luu noi bo truoc khi publish cho ung vien.</p>
+        <p class="eyebrow">Tin tuyển dụng</p>
+        <h1 th:text="${editMode ? 'Sửa tin tuyển dụng' : 'Tạo tin tuyển dụng'}"></h1>
+        <p>Thông tin được lưu nội bộ trước khi publish cho ứng viên.</p>
     </div>
     <form class="form-panel form-panel-wide"
           th:action="${editMode} ? @{/manage/jobs/{id}/edit(id=${jobId})} : @{/manage/jobs}"
@@ -17,57 +17,57 @@
         </div>
         <div class="form-grid">
             <div class="form-group form-grid-full">
-                <label>Job title</label>
+                <label>Tên vị trí</label>
                 <input class="form-control" th:field="*{title}">
                 <span class="field-error" th:errors="*{title}"></span>
             </div>
             <div class="form-group">
-                <label>Department</label>
+                <label>Phòng ban</label>
                 <input class="form-control" th:field="*{department}">
                 <span class="field-error" th:errors="*{department}"></span>
             </div>
             <div class="form-group">
-                <label>Location</label>
+                <label>Địa điểm</label>
                 <input class="form-control" th:field="*{location}">
                 <span class="field-error" th:errors="*{location}"></span>
             </div>
             <div class="form-group">
-                <label>Company</label>
+                <label>Công ty</label>
                 <select class="form-control" th:field="*{companyId}">
-                    <option value="">-- Select company --</option>
+                    <option value="">-- Chọn công ty --</option>
                     <option th:each="c:${companies}" th:value="${c.id}" th:text="${c.name}"></option>
                 </select>
                 <span class="field-error" th:errors="*{companyId}"></span>
             </div>
             <div class="form-group">
-                <label>Job type</label>
+                <label>Loại hình công việc</label>
                 <select class="form-control" th:field="*{jobType}">
-                    <option value="">-- Select type --</option>
+                    <option value="">-- Chọn loại hình --</option>
                     <option th:each="t:${jobTypes}" th:value="${t.name()}" th:text="${t.name()}"></option>
                 </select>
                 <span class="field-error" th:errors="*{jobType}"></span>
             </div>
             <div class="form-group">
-                <label>Salary range</label>
-                <input class="form-control" th:field="*{salaryRange}" placeholder="15-20M VND">
+                <label>Mức lương</label>
+                <input class="form-control" th:field="*{salaryRange}" placeholder="15-20 triệu VNĐ">
                 <span class="field-error" th:errors="*{salaryRange}"></span>
             </div>
             <div class="form-group">
-                <label>Application deadline</label>
+                <label>Hạn nộp đơn</label>
                 <input class="form-control" type="date" th:field="*{deadline}">
             </div>
             <div class="form-group form-grid-full">
-                <label>Job description</label>
+                <label>Mô tả công việc</label>
                 <textarea class="form-control" rows="6" th:field="*{description}"></textarea>
                 <span class="field-error" th:errors="*{description}"></span>
             </div>
             <div class="form-group form-grid-full">
-                <label>Requirements</label>
+                <label>Yêu cầu công việc</label>
                 <textarea class="form-control" rows="5" th:field="*{requirements}"></textarea>
                 <span class="field-error" th:errors="*{requirements}"></span>
             </div>
             <fieldset class="form-group form-grid-full skill-picker">
-                <legend>Required skills</legend>
+                <legend>Kỹ năng yêu cầu</legend>
                 <label th:each="s:${skills}">
                     <input type="checkbox" th:field="*{skillIds}" th:value="${s.id}">
                     <span th:text="${s.name}"></span>
@@ -75,8 +75,8 @@
             </fieldset>
         </div>
         <div class="actions">
-            <button class="button" type="submit" th:text="${editMode ? 'Save changes' : 'Save as Draft'}"></button>
-            <a class="button button-secondary" th:href="${editMode} ? @{/manage/jobs/{id}(id=${jobId})} : @{/manage/jobs}">Cancel</a>
+            <button class="button" type="submit" th:text="${editMode ? 'Lưu thay đổi' : 'Lưu bản nháp'}"></button>
+            <a class="button button-secondary" th:href="${editMode} ? @{/manage/jobs/{id}(id=${jobId})} : @{/manage/jobs}">Hủy</a>
         </div>
     </form>
 </main>

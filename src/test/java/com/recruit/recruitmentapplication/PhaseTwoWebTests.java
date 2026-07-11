@@ -134,10 +134,10 @@ class PhaseTwoWebTests {
     @Test
     void adminCanLoginAndOpenUserManagement() throws Exception {
         MvcResult login = mockMvc.perform(post("/auth/login")
-                        .param("username", "admin")
-                        .param("password", "Admin@123"))
-                .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/admin/users"))
+                .param("username", "admin")
+                .param("password", "Admin@123"))
+        .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/admin/dashboard"))
                 .andExpect(request().sessionAttribute(SessionConstants.LOGGED_IN_USER,
                         org.hamcrest.Matchers.instanceOf(SessionUser.class)))
                 .andReturn();
