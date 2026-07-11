@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{layout/base :: head('Job detail')}"></head>
+<head th:replace="~{layout/base :: head('Chi tiết công việc')}"></head>
 <body>
 <header th:replace="~{layout/base :: header}"></header>
 <main class="container page-content">
@@ -16,45 +16,45 @@
     <section class="detail-panel">
         <dl class="detail-grid">
             <div>
-                <dt>Company</dt>
+                <dt>Công ty</dt>
                 <dd th:text="${job.company.name}"></dd>
             </div>
             <div>
-                <dt>Department</dt>
+                <dt>Phòng ban</dt>
                 <dd th:text="${job.department}"></dd>
             </div>
             <div>
-                <dt>Location</dt>
+                <dt>Địa điểm</dt>
                 <dd th:text="${job.location}"></dd>
             </div>
             <div>
-                <dt>Job type</dt>
+                <dt>Loại hình công việc</dt>
                 <dd th:text="${job.jobType}"></dd>
             </div>
             <div>
-                <dt>Salary range</dt>
+                <dt>Mức lương</dt>
                 <dd th:text="${job.salaryRange ?: '-'}"></dd>
             </div>
             <div>
-                <dt>Deadline</dt>
+                <dt>Hạn nộp</dt>
                 <dd th:text="${job.deadline ?: '-'}"></dd>
             </div>
         </dl>
         <div class="read-block">
-            <h3>Description</h3>
+            <h3>Mô tả công việc</h3>
             <p th:text="${job.description}"></p>
         </div>
         <div class="read-block">
-            <h3>Requirements</h3>
+            <h3>Yêu cầu công việc</h3>
             <p th:text="${job.requirements ?: '-'}"></p>
         </div>
         <div class="read-block">
-            <h3>Required skills</h3>
-            <p class="muted" th:if="${#sets.isEmpty(job.requiredSkills)}">No required skills have been added.</p>
+            <h3>Kỹ năng yêu cầu</h3>
+            <p class="muted" th:if="${#sets.isEmpty(job.requiredSkills)}">Chưa có kỹ năng yêu cầu nào được thêm.</p>
             <span class="badge skill-badge" th:each="s : ${job.requiredSkills}" th:text="${s.name}"></span>
         </div>
     </section>
-    <a class="text-link" th:href="@{/jobs}">Back to jobs</a>
+    <a class="text-link" th:href="@{/jobs}">Quay lại danh sách việc làm</a>
 </main>
 <footer th:replace="~{layout/base :: footer}"></footer>
 </body>

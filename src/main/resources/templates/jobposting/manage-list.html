@@ -1,41 +1,41 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{layout/base :: head('Manage Jobs')}"></head>
+<head th:replace="~{layout/base :: head('Quản lý tin tuyển dụng')}"></head>
 <body>
 <header th:replace="~{layout/base :: header}"></header>
 <main class="container page-content">
     <div class="page-heading heading-row">
         <div>
-            <p class="eyebrow">Job Management</p>
-            <h1>Jobs</h1>
-            <p>Internal list for Admin and HR Manager job ownership workflows.</p>
+            <p class="eyebrow">Quản lý tin tuyển dụng</p>
+            <h1>Tin tuyển dụng</h1>
+            <p>Danh sách nội bộ dành cho Admin và HR Manager quản lý tin tuyển dụng.</p>
         </div>
-        <a class="button" th:href="@{/manage/jobs/new}">Create New Job</a>
+        <a class="button" th:href="@{/manage/jobs/new}">Tạo tin tuyển dụng mới</a>
     </div>
 
     <div class="tab-bar">
         <a class="tab-link" th:classappend="${statusFilter == null or #strings.isEmpty(statusFilter)} ? ' tab-active' : ''"
            th:href="@{/manage/jobs(department=${departmentFilter}, keyword=${keyword})}">
-            All (<span th:text="${statusCounts.get('ALL')}"></span>)</a>
+            Tất cả (<span th:text="${statusCounts.get('ALL')}"></span>)</a>
         <a class="tab-link" th:classappend="${statusFilter == 'DRAFT'} ? ' tab-active' : ''"
            th:href="@{/manage/jobs(status='DRAFT', department=${departmentFilter}, keyword=${keyword})}">
-            Draft (<span th:text="${statusCounts.get('DRAFT')}"></span>)</a>
+            Nháp (<span th:text="${statusCounts.get('DRAFT')}"></span>)</a>
         <a class="tab-link" th:classappend="${statusFilter == 'ACTIVE'} ? ' tab-active' : ''"
            th:href="@{/manage/jobs(status='ACTIVE', department=${departmentFilter}, keyword=${keyword})}">
-            Active (<span th:text="${statusCounts.get('ACTIVE')}"></span>)</a>
+            Đang tuyển (<span th:text="${statusCounts.get('ACTIVE')}"></span>)</a>
         <a class="tab-link" th:classappend="${statusFilter == 'CLOSED'} ? ' tab-active' : ''"
            th:href="@{/manage/jobs(status='CLOSED', department=${departmentFilter}, keyword=${keyword})}">
-            Closed (<span th:text="${statusCounts.get('CLOSED')}"></span>)</a>
+            Đã đóng (<span th:text="${statusCounts.get('CLOSED')}"></span>)</a>
     </div>
 
     <form class="search-row filter-row" th:action="@{/manage/jobs}" method="get">
         <input type="hidden" name="status" th:value="${statusFilter}">
         <select class="form-control" name="department" onchange="this.form.submit()">
-            <option value="">All departments</option>
+            <option value="">Tất cả phòng ban</option>
             <option th:each="d : ${departments}" th:value="${d}" th:selected="${d == departmentFilter}" th:text="${d}"></option>
         </select>
-        <input class="form-control" name="keyword" th:value="${keyword}" placeholder="Search by job title">
-        <button class="button" type="submit">Filter</button>
+        <input class="form-control" name="keyword" th:value="${keyword}" placeholder="Tìm theo tên vị trí">
+        <button class="button" type="submit">Lọc</button>
     </form>
 
     <div class="job-card-grid">
@@ -47,34 +47,34 @@
             </div>
             <p class="muted" th:text="${(job.department ?: '-') + ' · ' + (job.location ?: '-')}"></p>
             <p class="job-card-meta">
-                <span th:text="'Applications: ' + ${applicationCounts.get(job.id)}"></span>
-                <span th:if="${job.deadline != null}" th:text="'Deadline: ' + ${job.deadline}"></span>
+                <span th:text="'Số đơn ứng tuyển: ' + ${applicationCounts.get(job.id)}"></span>
+                <span th:if="${job.deadline != null}" th:text="'Hạn nộp: ' + ${job.deadline}"></span>
             </p>
             <div class="actions">
                 <a class="button button-secondary button-small"
                    th:if="${job.status.name() == 'DRAFT' or job.status.name() == 'ACTIVE'}"
-                   th:href="@{/manage/jobs/{id}/edit(id=${job.id})}">Edit</a>
+                   th:href="@{/manage/jobs/{id}/edit(id=${job.id})}">Sửa</a>
 
                 <form th:if="${job.status.name() == 'DRAFT'}" method="post"
                       th:action="@{/manage/jobs/{id}/publish(id=${job.id})}"
-                      onsubmit="return confirm('Publish this job posting?')">
-                    <button class="button button-small" type="submit">Publish</button>
+                      onsubmit="return confirm('Đăng tin tuyển dụng này?')">
+                    <button class="button button-small" type="submit">Đăng tin</button>
                 </form>
 
                 <form th:if="${job.status.name() == 'ACTIVE'}" method="post"
                       th:action="@{/manage/jobs/{id}/close(id=${job.id})}"
-                      onsubmit="return confirm('Closing will stop accepting new applications. Existing applications are not affected.')">
-                    <button class="button button-secondary button-small" type="submit">Close</button>
+                      onsubmit="return confirm('Đóng tin sẽ ngừng nhận đơn ứng tuyển mới. Các đơn đã nộp không bị ảnh hưởng.')">
+                    <button class="button button-secondary button-small" type="submit">Đóng tin</button>
                 </form>
 
                 <form th:if="${job.status.name() == 'DRAFT' and applicationCounts.get(job.id) == 0}" method="post"
                       th:action="@{/manage/jobs/{id}/delete(id=${job.id})}"
-                      onsubmit="return confirm('Delete this draft job posting? This action cannot be undone.')">
-                    <button class="button button-danger button-small" type="submit">Delete</button>
+                      onsubmit="return confirm('Xoá tin tuyển dụng đang ở dạng nháp này? Hành động này không thể hoàn tác.')">
+                    <button class="button button-danger button-small" type="submit">Xoá</button>
                 </form>
             </div>
         </div>
-        <p th:if="${#lists.isEmpty(jobs)}" class="empty-cell">No job postings match your current filters.</p>
+        <p th:if="${#lists.isEmpty(jobs)}" class="empty-cell">Không có tin tuyển dụng nào phù hợp với bộ lọc hiện tại.</p>
     </div>
 </main>
 <footer th:replace="~{layout/base :: footer}"></footer>

@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{layout/base :: head('Job Detail')}"></head>
+<head th:replace="~{layout/base :: head('Chi tiết tin tuyển dụng')}"></head>
 <body>
 <header th:replace="~{layout/base :: header}"></header>
 <main class="container page-content">
@@ -25,94 +25,94 @@
             </p>
         </div>
         <div class="actions">
-            <a class="button button-secondary" th:if="${canEdit}" th:href="@{/manage/jobs/{id}/edit(id=${job.id})}">Edit</a>
+            <a class="button button-secondary" th:if="${canEdit}" th:href="@{/manage/jobs/{id}/edit(id=${job.id})}">Sửa</a>
             <form th:if="${canPublish}" th:action="@{/manage/jobs/{id}/publish(id=${job.id})}" method="post"
-                  onsubmit="return confirm('Publish this job posting?')">
-                <button class="button" type="submit">Publish</button>
+                  onsubmit="return confirm('Đăng tin tuyển dụng này?')">
+                <button class="button" type="submit">Đăng tin</button>
             </form>
             <form th:if="${canClose}" th:action="@{/manage/jobs/{id}/close(id=${job.id})}" method="post"
-                  onsubmit="return confirm('Closing will stop accepting new applications. Existing applications are not affected.')">
-                <button class="button button-danger" type="submit">Close</button>
+                  onsubmit="return confirm('Đóng tin sẽ ngừng nhận đơn ứng tuyển mới. Các đơn đã nộp không bị ảnh hưởng.')">
+                <button class="button button-danger" type="submit">Đóng tin</button>
             </form>
             <form th:if="${canDelete}" th:action="@{/manage/jobs/{id}/delete(id=${job.id})}" method="post"
-                  onsubmit="return confirm('Delete this draft job posting? This action cannot be undone.')">
-                <button class="button button-danger" type="submit">Delete</button>
+                  onsubmit="return confirm('Xoá tin tuyển dụng đang ở dạng nháp này? Hành động này không thể hoàn tác.')">
+                <button class="button button-danger" type="submit">Xoá</button>
             </form>
         </div>
     </div>
 
     <div class="alert alert-info" th:if="${job.status.name() == 'CLOSED'}">
-        This posting is closed and no longer accepting applications.
+        Tin tuyển dụng này đã đóng và không còn nhận đơn ứng tuyển.
     </div>
 
-    <section class="metric-strip" aria-label="Job summary">
+    <section class="metric-strip" aria-label="Tổng quan tin tuyển dụng">
         <div>
-            <span>Total applications</span>
+            <span>Tổng số đơn ứng tuyển</span>
             <strong th:text="${applicationCount}"></strong>
         </div>
         <div>
-            <span>Status</span>
+            <span>Trạng thái</span>
             <strong th:text="${job.status}"></strong>
         </div>
         <div>
-            <span>Deadline</span>
+            <span>Hạn nộp</span>
             <strong th:text="${job.deadline ?: '-'}"></strong>
         </div>
         <div>
-            <span>Created by</span>
+            <span>Người tạo</span>
             <strong th:text="${job.createdBy != null ? job.createdBy.fullName : '-'}"></strong>
         </div>
     </section>
 
-    <form class="detail-panel readonly-job-panel readonly-job-form" aria-label="Job information">
-        <h2>Job information</h2>
+    <form class="detail-panel readonly-job-panel readonly-job-form" aria-label="Thông tin tin tuyển dụng">
+        <h2>Thông tin tin tuyển dụng</h2>
         <div class="form-grid">
             <div class="form-group">
-                <label for="jobDepartment">Department</label>
+                <label for="jobDepartment">Phòng ban</label>
                 <input class="form-control" id="jobDepartment" name="department" th:value="${job.department}" readonly>
             </div>
             <div class="form-group">
-                <label for="jobLocation">Location</label>
+                <label for="jobLocation">Địa điểm</label>
                 <input class="form-control" id="jobLocation" name="location" th:value="${job.location}" readonly>
             </div>
             <div class="form-group">
-                <label for="jobSalaryRange">Salary range</label>
+                <label for="jobSalaryRange">Mức lương</label>
                 <input class="form-control" id="jobSalaryRange" name="salaryRange" th:value="${job.salaryRange ?: '-'}" readonly>
             </div>
             <div class="form-group">
-                <label for="jobDeadline">Deadline</label>
+                <label for="jobDeadline">Hạn nộp</label>
                 <input class="form-control" id="jobDeadline" name="deadline" th:value="${job.deadline ?: '-'}" readonly>
             </div>
             <div class="form-group">
-                <label for="jobCreatedDate">Date created</label>
+                <label for="jobCreatedDate">Ngày tạo</label>
                 <input class="form-control" id="jobCreatedDate" name="postedDate" th:value="${job.postedDate}" readonly>
             </div>
             <div class="form-group">
-                <label for="jobCreatedBy">Created by</label>
+                <label for="jobCreatedBy">Người tạo</label>
                 <input class="form-control" id="jobCreatedBy" name="createdBy" th:value="${job.createdBy != null ? job.createdBy.fullName : '-'}" readonly>
             </div>
             <div class="form-group form-grid-full">
-                <label for="jobDescription">Description</label>
+                <label for="jobDescription">Mô tả công việc</label>
                 <textarea class="form-control" id="jobDescription" name="description" rows="6" readonly th:text="${job.description}"></textarea>
             </div>
             <div class="form-group form-grid-full">
-                <label for="jobRequirements">Requirements</label>
+                <label for="jobRequirements">Yêu cầu công việc</label>
                 <textarea class="form-control" id="jobRequirements" name="requirements" rows="5" readonly th:text="${job.requirements ?: '-'}"></textarea>
             </div>
         </div>
         <div class="read-block">
-            <h3>Required skills</h3>
-            <p class="muted" th:if="${#sets.isEmpty(job.requiredSkills)}">No required skills have been added.</p>
+            <h3>Kỹ năng yêu cầu</h3>
+            <p class="muted" th:if="${#sets.isEmpty(job.requiredSkills)}">Chưa có kỹ năng yêu cầu nào được thêm.</p>
             <span class="badge skill-badge" th:each="s : ${job.requiredSkills}" th:text="${s.name}"></span>
         </div>
     </form>
 
     <section class="detail-panel pipeline-panel">
         <div class="section-title-row">
-            <h2>Pipeline summary</h2>
-            <span class="badge" th:text="${applicationCount + ' applications'}"></span>
+            <h2>Tổng quan pipeline</h2>
+            <span class="badge" th:text="${applicationCount + ' đơn ứng tuyển'}"></span>
         </div>
-        <p class="empty-cell" th:if="${applicationCount == 0}">No applications have been received for this job posting yet.</p>
+        <p class="empty-cell" th:if="${applicationCount == 0}">Tin tuyển dụng này chưa nhận được đơn ứng tuyển nào.</p>
         <div class="pipeline-list">
             <div class="pipeline-row" th:each="stage : ${pipelineStages}">
                 <span class="pipeline-label" th:text="${stage.name}"></span>
@@ -125,8 +125,8 @@
     </section>
 
     <nav class="tab-links" aria-label="Job detail tabs">
-        <a th:href="@{/manage/jobs/{id}/applications(id=${job.id})}">View Applications</a>
-        <a th:href="@{/manage/jobs/{id}/report(id=${job.id})}">Report</a>
+        <a th:href="@{/manage/jobs/{id}/applications(id=${job.id})}">Xem đơn ứng tuyển</a>
+        <a th:href="@{/manage/jobs/{id}/report(id=${job.id})}">Báo cáo</a>
     </nav>
 </main>
 <footer th:replace="~{layout/base :: footer}"></footer>
