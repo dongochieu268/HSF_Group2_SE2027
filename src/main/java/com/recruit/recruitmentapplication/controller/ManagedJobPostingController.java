@@ -3,6 +3,7 @@ package com.recruit.recruitmentapplication.controller;
 import com.recruit.recruitmentapplication.dto.JobPostingForm;
 import com.recruit.recruitmentapplication.dto.SessionUser;
 import com.recruit.recruitmentapplication.entity.JobPosting;
+import com.recruit.recruitmentapplication.service.ApplicationService;
 import com.recruit.recruitmentapplication.service.CompanyService;
 import com.recruit.recruitmentapplication.service.JobPostingService;
 import com.recruit.recruitmentapplication.util.SessionConstants;
@@ -24,10 +25,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 public class ManagedJobPostingController {
     private final JobPostingService jobPostingService;
     private final CompanyService companyService;
+    private final ApplicationService applicationService;
 
-    public ManagedJobPostingController(JobPostingService jobPostingService, CompanyService companyService) {
+    public ManagedJobPostingController(JobPostingService jobPostingService, CompanyService companyService,
+                                       ApplicationService applicationService) {
         this.jobPostingService = jobPostingService;
         this.companyService = companyService;
+        this.applicationService = applicationService;
     }
 
     @GetMapping
@@ -93,6 +97,18 @@ public class ManagedJobPostingController {
             model.addAttribute("canClose", job.getStatus() == JobPosting.PostingStatus.ACTIVE);
             model.addAttribute("canDelete", job.getStatus() == JobPosting.PostingStatus.DRAFT && applicationCount == 0);
             return "jobposting/manage-detail";
+        } catch (IllegalArgumentException exception) {
+            return "redirect:/error/403";
+        }
+    }
+
+    @GetMapping("/{id}/applications")
+    public String applications(@PathVariable Long id, Model model, HttpSession session) {
+        try {
+            JobPosting job = jobPostingService.findManagedDetail(id, current(session));
+            model.addAttribute("job", job);
+            model.addAttribute("applications", applicationService.findByJob(id));
+            return "application/list";
         } catch (IllegalArgumentException exception) {
             return "redirect:/error/403";
         }
