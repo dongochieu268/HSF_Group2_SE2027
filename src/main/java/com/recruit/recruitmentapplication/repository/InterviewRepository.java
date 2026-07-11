@@ -15,6 +15,8 @@ public interface InterviewRepository extends JpaRepository<Interview, Long> {
 
     List<Interview> findByResult(Interview.InterviewResult result);
 
+    List<Interview> findByInterviewer_IdOrderByScheduledAtDesc(Long interviewerId);
+
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Transactional
     @Query("UPDATE Interview i SET i.result = :result, i.notes = :notes WHERE i.id = :id")
