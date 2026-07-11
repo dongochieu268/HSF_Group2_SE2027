@@ -19,6 +19,7 @@
             <a th:if="${session.loggedInUser != null and session.loggedInUser.roleName == 'CANDIDATE'}" th:href="@{/candidates/me}">Hồ sơ của tôi</a>
             <a th:if="${session.loggedInUser != null and session.loggedInUser.roleName == 'CANDIDATE'}" th:href="@{/my-applications}">Đơn ứng tuyển của tôi</a>
             <a th:if="${session.loggedInUser != null and (session.loggedInUser.roleName == 'ADMIN' or session.loggedInUser.roleName == 'HR_MANAGER')}" th:href="@{/candidates}">Ứng viên</a>
+            <a th:if="${session.loggedInUser != null and session.loggedInUser.roleName == 'INTERVIEWER'}" th:href="@{/interviews}">Phỏng vấn của tôi</a>
             <a th:if="${session.loggedInUser?.roleName == 'ADMIN'}" th:href="@{/admin/users}">Quản lý người dùng</a>
             <a th:if="${session.loggedInUser == null}" th:href="@{/auth/login}">Đăng nhập</a>
         </nav>
