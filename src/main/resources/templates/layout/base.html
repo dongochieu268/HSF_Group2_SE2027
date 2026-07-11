@@ -28,6 +28,8 @@
                th:href="@{/my-applications}">My Applications</a>
             <a th:if="${session.loggedInUser != null and (session.loggedInUser.roleName == 'ADMIN' or session.loggedInUser.roleName == 'HR_MANAGER')}"
                th:href="@{/candidates}">Candidates</a>
+            <a th:if="${session.loggedInUser != null and (session.loggedInUser.roleName == 'ADMIN' or session.loggedInUser.roleName == 'HR_MANAGER')}"
+               th:href="@{/manage/reports}">Reports</a>
             <a th:if="${session.loggedInUser != null and session.loggedInUser.roleName == 'INTERVIEWER'}"
                th:href="@{/interviews}">My Interviews</a>
             <a th:if="${session.loggedInUser?.roleName == 'ADMIN'}"
