@@ -9,6 +9,7 @@ INSERT INTO users (id, username, password, email, full_name, enabled, created_at
 INSERT INTO users (id, username, password, email, full_name, enabled, created_at, role_id) VALUES (4, 'bob', '$2a$10$XyrNA8NFN0Ko6X34a8jEIu4mVTI1GgO7KTwiqxTT17pmA3aLwHZ7G', 'bob@example.com', 'Bob Tran', TRUE, '2026-07-01T09:03:00', 3);
 INSERT INTO users (id, username, password, email, full_name, enabled, created_at, role_id) VALUES (5, 'carol', '$2a$10$Iahb6Eh0x0XLTJmcNkam8uLlRmej76zl8GW711KaGKpJh9U.f6r3u', 'carol@example.com', 'Carol Le', TRUE, '2026-07-01T09:04:00', 3);
 INSERT INTO users (id, username, password, email, full_name, enabled, created_at, role_id) VALUES (6, 'david', '$2a$10$3y2GoAVWd9tJ24xcsevCSerbxfOLIwWCXPgSLLehu1x1FDgruasG6', 'david@example.com', 'David Pham', TRUE, '2026-07-01T09:05:00', 3);
+INSERT INTO users (id, username, password, email, full_name, enabled, created_at, role_id) VALUES (7, 'interviewer1', '$2a$10$r7MkMz1PXe3JEz.USSGYn.ApIs.rI6yVROPRKLZUxMJC9n/QHx4cG', 'interviewer1@recruit.com', 'John Smith', TRUE, '2026-07-01T09:06:00', 4);
 
 INSERT INTO company_profiles (id, description, headquarters, employee_count, founded_year) VALUES (1, 'Cloud solutions leader', 'HCM', 500, 2010);
 INSERT INTO company_profiles (id, description, headquarters, employee_count, founded_year) VALUES (2, 'Digital banking fintech', 'Ha Noi', 200, 2015);
@@ -97,7 +98,7 @@ INSERT INTO applications (id, candidate_id, job_posting_id, applied_at, status, 
 INSERT INTO applications (id, candidate_id, job_posting_id, applied_at, status, cover_letter) VALUES (3, 3, 3, '2026-07-01T10:20:00', 'SUBMITTED', 'My data science background fits the analytics needs of this role.');
 INSERT INTO applications (id, candidate_id, job_posting_id, applied_at, status, cover_letter) VALUES (4, 1, 2, '2026-07-01T10:30:00', 'SUBMITTED', 'I can also support full-stack work for candidate-facing features.');
 
-INSERT INTO interviews (id, application_id, scheduled_at, interview_type, interviewer_name, notes, result) VALUES (1, 1, '2026-07-04T09:00:00', 'TECHNICAL', 'John Smith', 'Strong Java skills', 'PASSED');
+INSERT INTO interviews (id, application_id, scheduled_at, interview_type, interviewer_id, notes, result) VALUES (1, 1, '2026-07-04T09:00:00', 'TECHNICAL', 7, 'Strong Java skills', 'PASSED');
 
 ALTER TABLE roles ALTER COLUMN id RESTART WITH 100;
 ALTER TABLE users ALTER COLUMN id RESTART WITH 100;

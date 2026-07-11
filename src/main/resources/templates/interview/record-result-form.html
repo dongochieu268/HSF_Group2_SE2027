@@ -1,11 +1,58 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{layout/base :: head('Kết quả phỏng vấn')}"></head>
+<head th:replace="~{layout/base :: head('Đánh giá phỏng vấn')}"></head>
 <body>
 <header th:replace="~{layout/base :: header}"></header>
 <main class="container page-content">
-    <section class="placeholder"><h1>Ghi nhận kết quả</h1>
-        <p>Form kết quả phỏng vấn được hoàn thiện ở phase sau.</p></section>
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+        <a th:href="@{/interviews}">Phỏng vấn của tôi</a>
+        <span>/</span>
+        <span>Đánh giá</span>
+    </nav>
+
+    <div class="page-heading">
+        <h1 th:text="${interview.application.candidate.name}"></h1>
+        <p>
+            <span th:text="${interview.application.jobPosting.title}"></span>
+            <span> · </span>
+            <span th:text="${#temporals.format(interview.scheduledAt, 'dd/MM/yyyy HH:mm')}"></span>
+            <span> · </span>
+            <span th:text="${interview.interviewType}"></span>
+        </p>
+    </div>
+
+    <section class="detail-panel">
+        <p class="form-error" th:if="${errorMessage}" th:text="${errorMessage}"></p>
+
+        <div th:if="${existingEvaluation != null}">
+            <p><strong>Đã nộp đánh giá:</strong></p>
+            <p>Điểm: <span th:text="${existingEvaluation.rating}"></span> / 5</p>
+            <p th:text="${existingEvaluation.feedback}"></p>
+            <p class="muted" th:text="${'Nộp lúc ' + #temporals.format(existingEvaluation.submittedAt, 'dd/MM/yyyy HH:mm')}"></p>
+        </div>
+
+        <form th:if="${existingEvaluation == null}"
+              th:action="@{/interviews/{id}/evaluate(id=${interview.id})}" method="post">
+            <div class="form-group">
+                <label for="rating">Điểm đánh giá (1-5)</label>
+                <select class="form-control" id="rating" name="rating" required>
+                    <option value="">-- Chọn điểm --</option>
+                    <option value="1">1 - Không đạt</option>
+                    <option value="2">2 - Yếu</option>
+                    <option value="3">3 - Đạt</option>
+                    <option value="4">4 - Khá</option>
+                    <option value="5">5 - Xuất sắc</option>
+                </select>
+            </div>
+            <div class="form-group form-grid-full">
+                <label for="feedback">Nhận xét chi tiết</label>
+                <textarea class="form-control" id="feedback" name="feedback" rows="5" required></textarea>
+            </div>
+            <button class="button" type="submit">Nộp đánh giá</button>
+        </form>
+    </section>
+
+    <a class="text-link" th:href="@{/interviews}">Quay lại danh sách phỏng vấn</a>
 </main>
 <footer th:replace="~{layout/base :: footer}"></footer>
 </body>
