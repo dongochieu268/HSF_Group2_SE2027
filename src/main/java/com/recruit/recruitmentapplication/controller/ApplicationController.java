@@ -43,6 +43,7 @@ public class ApplicationController {
             model.addAttribute("statusHistory", applicationService.listStatusHistory(id));
             model.addAttribute("documents", applicationService.listDocuments(id));
             model.addAttribute("interviewTypes", Interview.InterviewType.values());
+            model.addAttribute("interviewerAccounts", applicationService.listInterviewerAccounts());
             model.addAttribute("canManage", Role.ADMIN.equals(user.getRoleName())
                     || Role.HR_MANAGER.equals(user.getRoleName()));
             return "application/detail";
@@ -79,10 +80,10 @@ public class ApplicationController {
                                             pattern = "yyyy-MM-dd'T'HH:mm")
                                     LocalDateTime scheduledAt,
                                     @RequestParam Interview.InterviewType interviewType,
-                                    @RequestParam(required = false) String interviewerName,
+                                    @RequestParam(required = false) Long interviewerId,
                                     HttpSession session) {
         try {
-            applicationService.scheduleInterview(id, current(session), scheduledAt, interviewType, interviewerName);
+            applicationService.scheduleInterview(id, current(session), scheduledAt, interviewType, interviewerId);
         } catch (IllegalArgumentException ignored) {
             // Dữ liệu không hợp lệ hoặc không có quyền: bỏ qua, quay lại trang chi tiết.
         }

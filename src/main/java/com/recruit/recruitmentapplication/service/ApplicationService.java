@@ -146,12 +146,18 @@ public class ApplicationService {
 
     @Transactional
     public void scheduleInterview(Long applicationId, SessionUser sessionUser, LocalDateTime scheduledAt,
-                                  Interview.InterviewType type, String interviewerName) {
+                                  Interview.InterviewType type, Long interviewerId) {
         Application application = findManagedDetail(applicationId, sessionUser);
         if (scheduledAt == null) {
             throw new IllegalArgumentException("Vui lòng chọn thời gian phỏng vấn");
         }
-        Interview interview = new Interview(scheduledAt, type, resolveInterviewer(interviewerName));
+        User interviewer = null;
+        if (interviewerId != null) {
+            interviewer = userRepository.findById(interviewerId)
+                    .filter(u -> Role.INTERVIEWER.equals(u.getRole().getName()))
+                    .orElseThrow(() -> new IllegalArgumentException("Interviewer không hợp lệ"));
+        }
+        Interview interview = new Interview(scheduledAt, type, interviewer);
         application.addInterview(interview);
         if (displayStatus(application.getStatus()).equals("APPLIED")
                 || displayStatus(application.getStatus()).equals("SCREENING")) {
@@ -161,6 +167,11 @@ public class ApplicationService {
                     ApplicationStatus.INTERVIEW_SCHEDULED.name(), null, "Lên lịch phỏng vấn"));
         }
         applicationRepository.save(application);
+    }
+
+    @Transactional(readOnly = true)
+    public List<User> listInterviewerAccounts() {
+        return userRepository.findByRole_Name(Role.INTERVIEWER);
     }
 
     private void ensureCanManage(Application application, SessionUser user) {
@@ -174,19 +185,6 @@ public class ApplicationService {
         if (owner == null || !owner.getId().equals(user.getId())) {
             throw new IllegalArgumentException("Access denied");
         }
-    }
-
-    private User resolveInterviewer(String interviewerName) {
-        if (interviewerName == null || interviewerName.isBlank()) {
-            return null;
-        }
-        String normalized = interviewerName.trim();
-        return userRepository.findByUsername(normalized)
-                .or(() -> userRepository.findByEmail(normalized))
-                .orElseGet(() -> userRepository.findAllWithRole().stream()
-                        .filter(user -> user.getFullName().equalsIgnoreCase(normalized))
-                        .findFirst()
-                        .orElse(null));
     }
 
     @Transactional

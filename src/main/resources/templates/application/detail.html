@@ -143,7 +143,7 @@
                         <strong th:text="${iv.interviewType}"></strong>
                         <span th:text="${#temporals.format(iv.scheduledAt, 'dd/MM/yyyy HH:mm')}"></span>
                         <span class="badge" th:text="${iv.result}"></span>
-                        <span class="muted" th:if="${iv.interviewerName}" th:text="'Người phỏng vấn: ' + ${iv.interviewerName}"></span>
+                        <span class="muted" th:if="${iv.interviewer != null}" th:text="'Người phỏng vấn: ' + ${iv.interviewer.fullName}"></span>
                     </li>
                 </ul>
 
@@ -161,8 +161,11 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <label for="interviewerName">Người phỏng vấn</label>
-                        <input class="form-control" id="interviewerName" name="interviewerName" type="text">
+                        <label for="interviewerId">Người phỏng vấn</label>
+                        <select class="form-control" id="interviewerId" name="interviewerId">
+                            <option value="">-- Chọn interviewer --</option>
+                            <option th:each="u : ${interviewerAccounts}" th:value="${u.id}" th:text="${u.fullName}"></option>
+                        </select>
                     </div>
                     <button class="button" type="submit">Lên lịch</button>
                 </form>
