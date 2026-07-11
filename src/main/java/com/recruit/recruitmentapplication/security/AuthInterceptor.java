@@ -40,9 +40,14 @@ public class AuthInterceptor implements HandlerInterceptor {
             return false;
         }
 
-
         if (request.getRequestURI().startsWith(request.getContextPath() + "/interviews")
                 && !Role.INTERVIEWER.equals(loggedInUser.getRoleName())) {
+            response.sendRedirect(request.getContextPath() + "/error/403");
+            return false;
+        }
+
+        if (request.getRequestURI().startsWith(request.getContextPath() + "/hr")
+                && !canManageRecruitment(loggedInUser)) {
             response.sendRedirect(request.getContextPath() + "/error/403");
             return false;
         }

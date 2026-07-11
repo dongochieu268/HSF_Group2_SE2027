@@ -39,6 +39,8 @@ public interface JobPostingRepository extends JpaRepository<JobPosting, Long> {
 
     long countByStatus(JobPosting.PostingStatus status);
 
+    long countByStatusAndCreatedBy_Id(JobPosting.PostingStatus status, Long userId);
+
     long countByCompany_Id(Long companyId);
 
     boolean existsByTitleAndCompany_Name(String title, String companyName);
@@ -68,6 +70,24 @@ public interface JobPostingRepository extends JpaRepository<JobPosting, Long> {
 
     @Query("SELECT DISTINCT jp FROM JobPosting jp LEFT JOIN FETCH jp.requiredSkills ORDER BY jp.id")
     List<JobPosting> findAllWithRequiredSkills();
+
+    @Query("""
+            SELECT jp FROM JobPosting jp
+            JOIN FETCH jp.company
+            LEFT JOIN FETCH jp.createdBy
+            WHERE jp.status = 'ACTIVE'
+            ORDER BY jp.postedDate DESC, jp.id DESC
+            """)
+    List<JobPosting> findActiveDashboardJobs();
+
+    @Query("""
+            SELECT jp FROM JobPosting jp
+            JOIN FETCH jp.company
+            LEFT JOIN FETCH jp.createdBy
+            WHERE jp.status = 'ACTIVE' AND jp.createdBy.id = :userId
+            ORDER BY jp.postedDate DESC, jp.id DESC
+            """)
+    List<JobPosting> findActiveDashboardJobsByOwner(@Param("userId") Long userId);
 
     @Query("""
             SELECT jp FROM JobPosting jp

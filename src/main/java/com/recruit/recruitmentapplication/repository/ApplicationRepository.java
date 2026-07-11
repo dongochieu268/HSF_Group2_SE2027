@@ -32,6 +32,10 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
 
     List<Application> findByStatus(Application.ApplicationStatus status);
 
+    long countByStatus(Application.ApplicationStatus status);
+
+    long countByStatusAndJobPosting_CreatedBy_Id(Application.ApplicationStatus status, Long userId);
+
     boolean existsByCandidate_IdAndJobPosting_Id(Long candidateId, Long jobPostingId);
 
     long countByCandidate_IdAndJobPosting_Id(Long candidateId, Long jobPostingId);

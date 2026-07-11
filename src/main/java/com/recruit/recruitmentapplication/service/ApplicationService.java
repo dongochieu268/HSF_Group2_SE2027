@@ -151,7 +151,7 @@ public class ApplicationService {
         if (scheduledAt == null) {
             throw new IllegalArgumentException("Vui lòng chọn thời gian phỏng vấn");
         }
-        Interview interview = new Interview(scheduledAt, type, interviewerName);
+        Interview interview = new Interview(scheduledAt, type, resolveInterviewer(interviewerName));
         application.addInterview(interview);
         if (displayStatus(application.getStatus()).equals("APPLIED")
                 || displayStatus(application.getStatus()).equals("SCREENING")) {
@@ -174,6 +174,19 @@ public class ApplicationService {
         if (owner == null || !owner.getId().equals(user.getId())) {
             throw new IllegalArgumentException("Access denied");
         }
+    }
+
+    private User resolveInterviewer(String interviewerName) {
+        if (interviewerName == null || interviewerName.isBlank()) {
+            return null;
+        }
+        String normalized = interviewerName.trim();
+        return userRepository.findByUsername(normalized)
+                .or(() -> userRepository.findByEmail(normalized))
+                .orElseGet(() -> userRepository.findAllWithRole().stream()
+                        .filter(user -> user.getFullName().equalsIgnoreCase(normalized))
+                        .findFirst()
+                        .orElse(null));
     }
 
     @Transactional

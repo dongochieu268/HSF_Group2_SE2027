@@ -78,6 +78,9 @@ public class AuthController {
         if (Role.ADMIN.equals(user.getRole().getName())) {
             return "redirect:/admin/dashboard";
         }
+        if (Role.HR_MANAGER.equals(user.getRole().getName())) {
+            return "redirect:/hr/dashboard";
+        }
         if (Role.CANDIDATE.equals(user.getRole().getName())) {
             return "redirect:/my-applications";
         }
