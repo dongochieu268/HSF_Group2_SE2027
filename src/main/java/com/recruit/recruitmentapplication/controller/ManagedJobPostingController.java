@@ -105,9 +105,10 @@ public class ManagedJobPostingController {
     @GetMapping("/{id}/applications")
     public String applications(@PathVariable Long id, Model model, HttpSession session) {
         try {
-            JobPosting job = jobPostingService.findManagedDetail(id, current(session));
+            SessionUser user = current(session);
+            JobPosting job = jobPostingService.findManagedDetail(id, user);
             model.addAttribute("job", job);
-            model.addAttribute("applications", applicationService.findByJob(id));
+            model.addAttribute("applications", applicationService.findManagedByJob(id, user));
             return "application/list";
         } catch (IllegalArgumentException exception) {
             return "redirect:/error/403";

@@ -17,11 +17,19 @@ public class CandidateService {
 
     @Transactional
     public Candidate getOrCreateProfileForUser(Long userId) {
-        return candidateRepository.findByUserIdWithProfileAndSkills(userId).orElseGet(() -> {
-            User user=userRepository.findById(userId).orElseThrow(()->new IllegalArgumentException("Không tìm thấy user id="+userId));
-            Candidate candidate=new Candidate(user.getFullName(),user.getEmail(),null); candidate.setUser(user);
+        Candidate candidate = candidateRepository.findByUserIdWithProfileAndSkills(userId).orElse(null);
+        if (candidate == null) {
+            User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy user id=" + userId));
+            candidate = new Candidate(user.getFullName(), user.getEmail(), null);
+            candidate.setUser(user);
             return candidateRepository.save(candidate);
-        });
+        }
+        if (candidate.getProfile() == null) {
+            candidate.setProfile(new CandidateProfile());
+            return candidateRepository.save(candidate);
+        }
+        return candidate;
     }
 
     @Transactional

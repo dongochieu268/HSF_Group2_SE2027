@@ -12,6 +12,7 @@ import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -61,6 +62,14 @@ public class Candidate {
         this.name = name;
         this.email = email;
         this.phone = phone;
+        setProfile(new CandidateProfile());
+    }
+
+    @PrePersist
+    private void initializeProfile() {
+        if (profile == null) {
+            setProfile(new CandidateProfile());
+        }
     }
 
     public Long getId() { return id; }

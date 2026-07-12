@@ -73,7 +73,7 @@ public class ApplicationService {
 
     @Transactional(readOnly = true)
     public List<Application> findMyApplications(Long candidateId, String displayStatusFilter) {
-        List<Application> all = applicationRepository.findByCandidate_Id(candidateId);
+        List<Application> all = applicationRepository.findByCandidateWithJob(candidateId);
         if (displayStatusFilter == null || displayStatusFilter.isBlank()) {
             return all;
         }
@@ -89,13 +89,22 @@ public class ApplicationService {
 
     @Transactional(readOnly = true)
     public Map<String, Long> countMyApplicationsByStatus(Long candidateId) {
-        List<Application> all = applicationRepository.findByCandidate_Id(candidateId);
+        List<Application> all = applicationRepository.findByCandidateWithJob(candidateId);
         Map<String, Long> counts = new LinkedHashMap<>();
         counts.put("ALL", (long) all.size());
         for (String bucket : DISPLAY_BUCKETS) {
             counts.put(bucket, all.stream().filter(a -> displayStatus(a.getStatus()).equals(bucket)).count());
         }
         return counts;
+    }
+
+    @Transactional(readOnly = true)
+    public List<Application> findManagedByJob(Long jobId, SessionUser user) {
+        List<Application> applications = applicationRepository.findByJobWithCandidate(jobId);
+        for (Application application : applications) {
+            ensureCanManage(application, user);
+        }
+        return applications;
     }
 
     // ===== SCR-17: Application Detail =====

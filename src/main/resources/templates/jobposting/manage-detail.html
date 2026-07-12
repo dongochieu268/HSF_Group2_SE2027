@@ -64,6 +64,11 @@
         </div>
     </section>
 
+    <nav class="tab-links" aria-label="Job detail tabs">
+        <a th:href="@{/manage/jobs/{id}/applications(id=${job.id})}">Đơn ứng tuyển</a>
+        <a th:href="@{/manage/jobs/{id}/report(id=${job.id})}">Báo cáo</a>
+    </nav>
+
     <form class="detail-panel readonly-job-panel readonly-job-form" aria-label="Thông tin tin tuyển dụng">
         <h2>Thông tin tin tuyển dụng</h2>
         <div class="form-grid">
@@ -124,10 +129,6 @@
         </div>
     </section>
 
-    <nav class="tab-links" aria-label="Job detail tabs">
-        <a th:href="@{/manage/jobs/{id}/applications(id=${job.id})}">Xem đơn ứng tuyển</a>
-        <a th:href="@{/manage/jobs/{id}/report(id=${job.id})}">Báo cáo</a>
-    </nav>
 </main>
 <footer th:replace="~{layout/base :: footer}"></footer>
 </body>

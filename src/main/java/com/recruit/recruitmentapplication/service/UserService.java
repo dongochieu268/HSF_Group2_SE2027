@@ -5,9 +5,11 @@ import com.recruit.recruitmentapplication.dto.ChangePasswordForm;
 import com.recruit.recruitmentapplication.dto.RegisterForm;
 import com.recruit.recruitmentapplication.dto.UpdateProfileForm;
 import com.recruit.recruitmentapplication.dto.UserAccountForm;
+import com.recruit.recruitmentapplication.entity.Candidate;
 import com.recruit.recruitmentapplication.entity.Role;
 import com.recruit.recruitmentapplication.entity.User;
 import com.recruit.recruitmentapplication.entity.User.AccountStatus;
+import com.recruit.recruitmentapplication.repository.CandidateRepository;
 import com.recruit.recruitmentapplication.repository.RoleRepository;
 import com.recruit.recruitmentapplication.repository.UserRepository;
 import com.recruit.recruitmentapplication.security.PasswordUtil;
@@ -24,11 +26,14 @@ public class UserService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final PasswordUtil passwordUtil;
+    private final CandidateRepository candidateRepository;
 
-    public UserService(UserRepository userRepository, RoleRepository roleRepository, PasswordUtil passwordUtil) {
+    public UserService(UserRepository userRepository, RoleRepository roleRepository, PasswordUtil passwordUtil,
+                       CandidateRepository candidateRepository) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.passwordUtil = passwordUtil;
+        this.candidateRepository = candidateRepository;
     }
 
     @Transactional
@@ -45,6 +50,11 @@ public class UserService {
 
         Role candidateRole = roleRepository.findByName(Role.CANDIDATE)
                 .orElseThrow(() -> new IllegalStateException("Chưa khởi tạo vai trò CANDIDATE"));
+        Candidate existingCandidate = candidateRepository.findByEmail(email).orElse(null);
+        if (existingCandidate != null && existingCandidate.getUser() != null) {
+            throw new IllegalArgumentException("Email đã tồn tại");
+        }
+
         User user = new User(
                 username,
                 passwordUtil.hash(form.getPassword()),
@@ -53,7 +63,13 @@ public class UserService {
                 candidateRole
         );
         user.setAccountStatus(AccountStatus.ACTIVE);
-        return userRepository.save(user);
+        User savedUser = userRepository.save(user);
+        if (existingCandidate != null) {
+            existingCandidate.setUser(savedUser);
+            existingCandidate.setName(savedUser.getFullName());
+            candidateRepository.save(existingCandidate);
+        }
+        return savedUser;
     }
 
     @Transactional(readOnly = true)

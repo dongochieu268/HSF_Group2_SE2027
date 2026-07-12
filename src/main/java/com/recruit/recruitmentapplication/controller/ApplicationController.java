@@ -36,7 +36,7 @@ public class ApplicationController {
         try {
             SessionUser user = current(session);
             Application application = applicationService.findManagedDetail(id, user);
-            model.addAttribute("application", application);
+            model.addAttribute("app", application);
             model.addAttribute("displayStatus", ApplicationService.displayStatus(application.getStatus()));
             model.addAttribute("statuses", Application.ApplicationStatus.values());
             model.addAttribute("notes", applicationService.listNotes(id));
