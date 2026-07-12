@@ -4,8 +4,56 @@
 <body>
 <header th:replace="~{layout/base :: header}"></header>
 <main class="container page-content">
-    <section class="placeholder"><h1>Danh sách đơn ứng tuyển</h1>
-        <p>Nghiệp vụ application được hoàn thiện ở phase sau.</p></section>
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+        <a th:href="@{/manage/jobs}">Jobs</a>
+        <span>/</span>
+        <a th:href="@{/manage/jobs/{id}(id=${job.id})}" th:text="${job.title}"></a>
+        <span>/</span>
+        <span>Đơn ứng tuyển</span>
+    </nav>
+
+    <div class="page-heading heading-row">
+        <div>
+            <p class="eyebrow" th:text="${job.department}"></p>
+            <h1>Đơn ứng tuyển</h1>
+            <p class="muted" th:text="${job.title}"></p>
+        </div>
+        <a class="button button-secondary" th:href="@{/manage/jobs/{id}(id=${job.id})}">Quay lại tin tuyển dụng</a>
+    </div>
+
+    <p class="empty-cell" th:if="${#lists.isEmpty(applications)}">
+        Tin tuyển dụng này chưa nhận được đơn ứng tuyển nào.
+    </p>
+
+    <div class="table-wrap" th:if="${not #lists.isEmpty(applications)}">
+        <table class="data-table">
+            <thead>
+            <tr>
+                <th>Ứng viên</th>
+                <th>Email</th>
+                <th>Ngày ứng tuyển</th>
+                <th>Trạng thái</th>
+                <th>Thao tác</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="app : ${applications}">
+                <td th:text="${app.candidate.name}"></td>
+                <td th:text="${app.candidate.email}"></td>
+                <td th:text="${app.appliedAt != null ? #temporals.format(app.appliedAt, 'dd/MM/yyyy HH:mm') : '-'}"></td>
+                <td>
+                    <span class="badge status-badge"
+                          th:classappend="' status-' + ${#strings.toLowerCase(T(com.recruit.recruitmentapplication.service.ApplicationService).displayStatus(app.status))}"
+                          th:text="${T(com.recruit.recruitmentapplication.service.ApplicationService).displayStatus(app.status)}"></span>
+                </td>
+                <td>
+                    <a class="button button-secondary button-small"
+                       th:href="@{/manage/applications/{id}(id=${app.id})}">Mở</a>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
 </main>
 <footer th:replace="~{layout/base :: footer}"></footer>
 </body>

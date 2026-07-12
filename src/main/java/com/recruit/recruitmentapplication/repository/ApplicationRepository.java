@@ -19,12 +19,21 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
     @EntityGraph(attributePaths = {
             "candidate",
             "candidate.profile",
+            "candidate.skills",
             "jobPosting",
             "jobPosting.company",
-            "interviews"
+            "interviews",
+            "interviews.interviewer"
     })
     Optional<Application> findWithDetailsById(Long id);
-    List<Application> findByCandidate_Id(Long candidateId);
+    @Query("""
+            SELECT a FROM Application a
+            JOIN FETCH a.jobPosting jp
+            LEFT JOIN FETCH jp.company
+            WHERE a.candidate.id = :candidateId
+            ORDER BY a.appliedAt DESC
+            """)
+    List<Application> findByCandidateWithJob(@Param("candidateId") Long candidateId);
 
     List<Application> findByJobPosting_Id(Long jobPostingId);
 

@@ -43,7 +43,7 @@
             <tr th:each="app : ${applications}">
                 <td><a class="text-link" th:href="@{/jobs/{id}(id=${app.jobPosting.id})}" th:text="${app.jobPosting.title}"></a></td>
                 <td th:text="${app.jobPosting.department ?: '-'}"></td>
-                <td th:text="${#temporals.format(app.appliedAt, 'dd/MM/yyyy')}"></td>
+                <td th:text="${app.appliedAt != null ? #temporals.format(app.appliedAt, 'dd/MM/yyyy') : '-'}"></td>
                 <td>
                     <span class="badge status-badge"
                           th:classappend="'status-' + ${#strings.toLowerCase(T(com.recruit.recruitmentapplication.service.ApplicationService).displayStatus(app.status))}"

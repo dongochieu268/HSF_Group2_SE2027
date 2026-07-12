@@ -100,9 +100,32 @@ BEGIN
         user_id BIGINT,
         CONSTRAINT pk_candidates PRIMARY KEY (id),
         CONSTRAINT uq_candidates_email UNIQUE (email),
-        CONSTRAINT uq_candidates_profile UNIQUE (profile_id),
         CONSTRAINT uq_candidates_user UNIQUE (user_id)
     );
+END;
+
+-- SQL Server treats NULL as a value in a normal UNIQUE constraint. The filtered
+-- index keeps the one-profile-per-candidate rule while allowing incomplete profiles.
+IF EXISTS (
+    SELECT 1
+    FROM sys.key_constraints
+    WHERE parent_object_id = OBJECT_ID(N'dbo.candidates')
+      AND name = N'uq_candidates_profile'
+)
+BEGIN
+    ALTER TABLE dbo.candidates DROP CONSTRAINT uq_candidates_profile;
+END;
+
+IF NOT EXISTS (
+    SELECT 1
+    FROM sys.indexes
+    WHERE object_id = OBJECT_ID(N'dbo.candidates')
+      AND name = N'ux_candidates_profile_not_null'
+)
+BEGIN
+    CREATE UNIQUE INDEX ux_candidates_profile_not_null
+        ON dbo.candidates(profile_id)
+        WHERE profile_id IS NOT NULL;
 END;
 
 IF OBJECT_ID(N'dbo.companies', N'U') IS NULL
