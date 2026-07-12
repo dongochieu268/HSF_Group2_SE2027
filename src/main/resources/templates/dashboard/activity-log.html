@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/base :: head('Activity Log')}"></head>
+<body>
+<header th:replace="~{layout/base :: header}"></header>
+<main class="container page-content">
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+        <a th:href="@{/admin/dashboard}">Dashboard</a>
+        <span>/</span>
+        <span>Activity Log</span>
+    </nav>
+
+    <div class="page-heading heading-row">
+        <div>
+            <p class="eyebrow">System Admin</p>
+            <h1>Activity Log</h1>
+            <p>Theo dõi các sự kiện quan trọng trong hệ thống.</p>
+        </div>
+        <a class="button button-secondary" th:href="@{/admin/dashboard}">Quay lại Dashboard</a>
+    </div>
+
+    <div class="table-wrap">
+        <table>
+            <thead>
+            <tr>
+                <th>Thời gian</th>
+                <th>Loại sự kiện</th>
+                <th>Người thực hiện</th>
+                <th>Mô tả</th>
+                <th>Địa chỉ IP</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="log : ${activityLogs}">
+                <td th:text="${#temporals.format(log.createdAt, 'yyyy-MM-dd HH:mm:ss')}"></td>
+                <td><span class="badge" th:text="${log.eventType}"></span></td>
+                <td th:text="${log.actorUsername ?: '-'}"></td>
+                <td th:text="${log.description ?: '-'}"></td>
+                <td th:text="${log.ipAddress ?: '-'}"></td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(activityLogs)}">
+                <td colspan="5" class="empty-cell">Chưa có nhật ký hoạt động nào.</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</main>
+<footer th:replace="~{layout/base :: footer}"></footer>
+</body>
+</html>
