@@ -15,8 +15,8 @@
     <div class="page-heading heading-row">
         <div>
             <p class="eyebrow" th:text="${job.department}"></p>
-            <h1>Đơn ứng tuyển</h1>
-            <p class="muted" th:text="${job.title}"></p>
+            <h1 th:text="'Đơn ứng tuyển cho ' + ${job.title}"></h1>
+            <p class="muted" th:text="${job.company.name}"></p>
         </div>
         <a class="button button-secondary" th:href="@{/manage/jobs/{id}(id=${job.id})}">Quay lại tin tuyển dụng</a>
     </div>
@@ -33,6 +33,7 @@
                 <th>Email</th>
                 <th>Ngày ứng tuyển</th>
                 <th>Trạng thái</th>
+                <th>Thư giới thiệu</th>
                 <th>Thao tác</th>
             </tr>
             </thead>
@@ -46,6 +47,7 @@
                           th:classappend="' status-' + ${#strings.toLowerCase(T(com.recruit.recruitmentapplication.service.ApplicationService).displayStatus(app.status))}"
                           th:text="${T(com.recruit.recruitmentapplication.service.ApplicationService).displayStatus(app.status)}"></span>
                 </td>
+                <td th:text="${app.coverLetter ?: '-'}"></td>
                 <td>
                     <a class="button button-secondary button-small"
                        th:href="@{/manage/applications/{id}(id=${app.id})}">Mở</a>
