@@ -3,8 +3,10 @@ package com.recruit.recruitmentapplication.service;
 import com.recruit.recruitmentapplication.dto.InterviewScheduleForm;
 import com.recruit.recruitmentapplication.entity.Application;
 import com.recruit.recruitmentapplication.entity.Interview;
+import com.recruit.recruitmentapplication.entity.User;
 import com.recruit.recruitmentapplication.repository.ApplicationRepository;
 import com.recruit.recruitmentapplication.repository.InterviewRepository;
+import com.recruit.recruitmentapplication.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,10 +17,12 @@ import java.time.LocalTime;
 public class InterviewService {
     private final InterviewRepository interviewRepository;
     private final ApplicationRepository applicationRepository;
+    private final UserRepository userRepository;
 
-    public InterviewService(InterviewRepository interviewRepository, ApplicationRepository applicationRepository) {
+    public InterviewService(InterviewRepository interviewRepository, ApplicationRepository applicationRepository, UserRepository userRepository) {
         this.interviewRepository = interviewRepository;
         this.applicationRepository = applicationRepository;
+        this.userRepository = userRepository;
     }
 
     @Transactional
@@ -34,7 +38,10 @@ public class InterviewService {
             throw new IllegalArgumentException("Interview must be scheduled for a future date and time.");
         }
 
-        Interview interview = new Interview(scheduledAt, Interview.InterviewType.TECHNICAL, form.getInterviewerName());
+        User interviewer = userRepository.findById(form.getInterviewerId())
+                .orElseThrow(() -> new IllegalArgumentException("Interviewer not found"));
+
+        Interview interview = new Interview(scheduledAt, Interview.InterviewType.TECHNICAL, interviewer);
         interview.setNotes(form.getLocation()); // Lưu location/meeting link vào notes
 
         application.addInterview(interview);

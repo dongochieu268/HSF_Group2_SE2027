@@ -9,8 +9,8 @@ import java.time.LocalDate;
 
 public class InterviewScheduleForm {
 
-    @NotBlank(message = "Vui lòng chọn người phỏng vấn")
-    private String interviewerName;
+    @NotNull(message = "Vui lòng chọn người phỏng vấn")
+    private Long interviewerId;
 
     @NotNull(message = "Vui lòng chọn ngày phỏng vấn")
     @FutureOrPresent(message = "Interview must be scheduled for a future date and time.")
@@ -23,8 +23,8 @@ public class InterviewScheduleForm {
     @Size(max = 500, message = "Location cannot exceed 500 characters")
     private String location;
 
-    public String getInterviewerName() { return interviewerName; }
-    public void setInterviewerName(String interviewerName) { this.interviewerName = interviewerName; }
+    public Long getInterviewerId() { return interviewerId; }
+    public void setInterviewerId(Long interviewerId) { this.interviewerId = interviewerId; }
 
     public LocalDate getInterviewDate() { return interviewDate; }
     public void setInterviewDate(LocalDate interviewDate) { this.interviewDate = interviewDate; }

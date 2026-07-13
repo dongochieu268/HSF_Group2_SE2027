@@ -24,13 +24,13 @@
         </div>
 
         <div class="form-group">
-            <label for="interviewerName">Interviewer</label>
+            <label for="interviewerId">Interviewer</label>
             <!-- Dropdown disabled nếu không có Interviewer nào -->
-            <select class="form-control" id="interviewerName" th:field="*{interviewerName}" th:disabled="${#lists.isEmpty(interviewers)}">
+            <select class="form-control" id="interviewerId" th:field="*{interviewerId}" th:disabled="${#lists.isEmpty(interviewers)}">
                 <option value="">-- Select Interviewer --</option>
-                <option th:each="iv : ${interviewers}" th:value="${iv.fullName}" th:text="${iv.fullName}"></option>
+                <option th:each="iv : ${interviewers}" th:value="${iv.id}" th:text="${iv.fullName}"></option>
             </select>
-            <span class="field-error" th:if="${#fields.hasErrors('interviewerName')}" th:errors="*{interviewerName}"></span>
+            <span class="field-error" th:if="${#fields.hasErrors('interviewerId')}" th:errors="*{interviewerId}"></span>
         </div>
 
         <div class="form-group">

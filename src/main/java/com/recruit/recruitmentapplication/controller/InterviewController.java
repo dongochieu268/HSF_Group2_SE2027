@@ -2,6 +2,7 @@ package com.recruit.recruitmentapplication.controller;
 
 import com.recruit.recruitmentapplication.dto.InterviewScheduleForm;
 import com.recruit.recruitmentapplication.entity.Application;
+import com.recruit.recruitmentapplication.entity.Interview;
 import com.recruit.recruitmentapplication.entity.User;
 import com.recruit.recruitmentapplication.repository.ApplicationRepository;
 import com.recruit.recruitmentapplication.service.InterviewService;
@@ -51,10 +52,10 @@ public class InterviewController {
         }
 
         try {
-            interviewService.scheduleInterview(applicationId, form);
+            Interview scheduledInterview = interviewService.scheduleInterview(applicationId, form);
             // Flash message chuyển hướng theo document SCR-18
             redirectAttributes.addFlashAttribute("successMessage",
-                    "Interview scheduled. " + form.getInterviewerName() + " has been assigned.");
+                    "Interview scheduled. " + scheduledInterview.getInterviewer().getFullName() + " has been assigned.");
             return "redirect:/applications/" + applicationId; // Quay về Application Detail (SCR-17)
         } catch (IllegalArgumentException e) {
             // Map lỗi vào trường interviewDate trên view
