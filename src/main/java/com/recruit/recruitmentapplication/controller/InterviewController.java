@@ -17,7 +17,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.util.List;
 
 @Controller
-@RequestMapping("/applications/{applicationId}/interviews")
+@RequestMapping("/manage/applications/{applicationId}/interviews")
 public class InterviewController {
     private final InterviewService interviewService;
     private final ApplicationRepository applicationRepository;
@@ -31,7 +31,7 @@ public class InterviewController {
 
     @GetMapping("/new")
     public String showScheduleForm(@PathVariable Long applicationId, Model model) {
-        Application application = applicationRepository.findById(applicationId)
+        Application application = applicationRepository.findWithDetailsById(applicationId)
                 .orElseThrow(() -> new IllegalArgumentException("Application not found"));
 
         prepareModel(model, application, new InterviewScheduleForm());
@@ -43,7 +43,7 @@ public class InterviewController {
                                     @Valid @ModelAttribute("interviewForm") InterviewScheduleForm form,
                                     BindingResult result, Model model, RedirectAttributes redirectAttributes) {
 
-        Application application = applicationRepository.findById(applicationId)
+        Application application = applicationRepository.findWithDetailsById(applicationId)
                 .orElseThrow(() -> new IllegalArgumentException("Application not found"));
 
         if (result.hasErrors()) {
@@ -56,7 +56,7 @@ public class InterviewController {
             // Flash message chuyển hướng theo document SCR-18
             redirectAttributes.addFlashAttribute("successMessage",
                     "Interview scheduled. " + scheduledInterview.getInterviewer().getFullName() + " has been assigned.");
-            return "redirect:/applications/" + applicationId; // Quay về Application Detail (SCR-17)
+            return "redirect:/manage/applications/" + applicationId; // Quay về Application Detail (SCR-17)
         } catch (IllegalArgumentException e) {
             // Map lỗi vào trường interviewDate trên view
             result.rejectValue("interviewDate", "error.interviewDate", e.getMessage());
@@ -66,7 +66,7 @@ public class InterviewController {
     }
 
     private void prepareModel(Model model, Application application, InterviewScheduleForm form) {
-        model.addAttribute("application", application);
+        model.addAttribute("app", application);
         model.addAttribute("interviewForm", form);
 
         // Theo chuẩn tài liệu: Lấy các INTERVIEWER đang Active (enabled) và xếp theo tên (fullName)
