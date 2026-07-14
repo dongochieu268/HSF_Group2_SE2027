@@ -7,9 +7,9 @@
 <main class="container page-content">
     <!-- Context header: Thông tin ứng viên & tin tuyển dụng -->
     <div class="page-heading">
-        <p class="eyebrow" th:text="${application.jobPosting.title}"></p>
+        <p class="eyebrow" th:text="${app.jobPosting.title}"></p>
         <h1>Interview Assignment</h1>
-        <p th:text="${'Candidate: ' + application.candidate.name}"></p>
+        <p th:text="${'Candidate: ' + app.candidate.name}"></p>
     </div>
 
     <!-- Display Condition: No active INTERVIEWER accounts exist -->
@@ -17,7 +17,7 @@
         No Interviewers are available. Ask Admin to create Interviewer accounts first.
     </div>
 
-    <form class="form-panel" th:action="@{/applications/{id}/interviews/new(id=${application.id})}" th:object="${interviewForm}" method="post">
+    <form class="form-panel" th:action="@{/manage/applications/{id}/interviews/new(id=${app.id})}" th:object="${interviewForm}" method="post">
 
         <div class="alert alert-error" th:if="${#fields.hasGlobalErrors()}">
             <p th:each="err : ${#fields.globalErrors()}" th:text="${err}"></p>
@@ -53,7 +53,7 @@
 
         <div class="actions" style="margin-top: 24px;">
             <button class="button" type="submit" th:disabled="${#lists.isEmpty(interviewers)}">Assign and Schedule</button>
-            <a class="button button-secondary" th:href="@{/applications/{id}(id=${application.id})}">Cancel</a>
+            <a th:href="@{/manage/applications/{id}(id=${app.id})}" class="button button-secondary">Cancel</a>
         </div>
     </form>
 </main>
