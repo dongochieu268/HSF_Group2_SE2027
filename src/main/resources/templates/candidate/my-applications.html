@@ -9,6 +9,8 @@
         <h1>My Applications</h1>
     </div>
 
+    <div class="alert alert-success" th:if="${successMessage}" th:text="${successMessage}"></div>
+
     <div class="tab-bar">
         <a class="tab-link" th:classappend="${statusFilter == null or #strings.isEmpty(statusFilter)} ? ' tab-active' : ''"
            th:href="@{/my-applications}">All (<span th:text="${statusCounts.get('ALL')}"></span>)</a>

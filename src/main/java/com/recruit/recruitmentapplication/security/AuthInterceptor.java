@@ -95,6 +95,7 @@ public class AuthInterceptor implements HandlerInterceptor {
     private boolean isJobWriteRequest(HttpServletRequest request) {
         String path = request.getRequestURI().substring(request.getContextPath().length());
         if (!path.startsWith("/jobs")) return false;
+        if (path.matches("/jobs/\\d+/apply")) return false;
         if (!"GET".equalsIgnoreCase(request.getMethod())) return true;
         return "/jobs/new".equals(path) || (path.startsWith("/jobs/") && path.endsWith("/edit"));
     }

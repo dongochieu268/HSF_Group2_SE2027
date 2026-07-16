@@ -54,6 +54,14 @@
             <span class="badge skill-badge" th:each="s : ${job.requiredSkills}" th:text="${s.name}"></span>
         </div>
     </section>
+    <section class="apply-panel">
+        <a class="button button-primary" th:if="${isCandidate and !hasApplied}"
+           th:href="@{/jobs/{id}/apply(id=${job.id})}">Ứng tuyển ngay</a>
+        <p class="alert alert-success" th:if="${isCandidate and hasApplied}">Bạn đã ứng tuyển vị trí này.</p>
+        <p class="muted" th:if="${session.loggedInUser == null}">
+            <a class="text-link" th:href="@{/auth/login}">Đăng nhập bằng tài khoản ứng viên</a> để ứng tuyển vị trí này.
+        </p>
+    </section>
     <a class="text-link" th:href="@{/jobs}">Quay lại danh sách việc làm</a>
 </main>
 <footer th:replace="~{layout/base :: footer}"></footer>

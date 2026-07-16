@@ -5,13 +5,17 @@ import com.recruit.recruitmentapplication.entity.Application;
 import com.recruit.recruitmentapplication.entity.Application.ApplicationStatus;
 import com.recruit.recruitmentapplication.entity.ApplicationNote;
 import com.recruit.recruitmentapplication.entity.ApplicationStatusHistory;
+import com.recruit.recruitmentapplication.entity.Candidate;
 import com.recruit.recruitmentapplication.entity.Interview;
+import com.recruit.recruitmentapplication.entity.JobPosting;
 import com.recruit.recruitmentapplication.entity.Role;
 import com.recruit.recruitmentapplication.entity.User;
 import com.recruit.recruitmentapplication.repository.ApplicationDocumentRepository;
 import com.recruit.recruitmentapplication.repository.ApplicationNoteRepository;
 import com.recruit.recruitmentapplication.repository.ApplicationRepository;
 import com.recruit.recruitmentapplication.repository.ApplicationStatusHistoryRepository;
+import com.recruit.recruitmentapplication.repository.CandidateRepository;
+import com.recruit.recruitmentapplication.repository.JobPostingRepository;
 import com.recruit.recruitmentapplication.repository.UserRepository;
 import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
@@ -50,17 +54,23 @@ public class ApplicationService {
     private final ApplicationStatusHistoryRepository statusHistoryRepository;
     private final ApplicationDocumentRepository applicationDocumentRepository;
     private final UserRepository userRepository;
+    private final CandidateRepository candidateRepository;
+    private final JobPostingRepository jobPostingRepository;
 
     public ApplicationService(ApplicationRepository applicationRepository,
                               ApplicationNoteRepository applicationNoteRepository,
                               ApplicationStatusHistoryRepository statusHistoryRepository,
                               ApplicationDocumentRepository applicationDocumentRepository,
-                              UserRepository userRepository) {
+                              UserRepository userRepository,
+                              CandidateRepository candidateRepository,
+                              JobPostingRepository jobPostingRepository) {
         this.applicationRepository = applicationRepository;
         this.applicationNoteRepository = applicationNoteRepository;
         this.statusHistoryRepository = statusHistoryRepository;
         this.applicationDocumentRepository = applicationDocumentRepository;
         this.userRepository = userRepository;
+        this.candidateRepository = candidateRepository;
+        this.jobPostingRepository = jobPostingRepository;
     }
 
     public static String displayStatus(ApplicationStatus status) {
@@ -199,6 +209,36 @@ public class ApplicationService {
         if (owner == null || !owner.getId().equals(user.getId())) {
             throw new IllegalArgumentException("Access denied");
         }
+    }
+
+    // ===== Apply Now: ứng viên nộp đơn ứng tuyển từ trang chi tiết công việc =====
+
+    @Transactional(readOnly = true)
+    public boolean hasApplied(Long candidateId, Long jobId) {
+        if (candidateId == null || jobId == null) {
+            return false;
+        }
+        return applicationRepository.existsByCandidate_IdAndJobPosting_Id(candidateId, jobId);
+    }
+
+    @Transactional
+    public Application apply(Long jobId, Long candidateId, String coverLetter) {
+        JobPosting jobPosting = jobPostingRepository.findActiveByIdWithDetails(jobId)
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Vị trí tuyển dụng không tồn tại hoặc không còn nhận hồ sơ"));
+        Candidate candidate = candidateRepository.findById(candidateId)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy hồ sơ ứng viên"));
+        if (applicationRepository.existsByCandidate_IdAndJobPosting_Id(candidateId, jobId)) {
+            throw new IllegalArgumentException("Bạn đã ứng tuyển vị trí này rồi");
+        }
+        String trimmedCoverLetter = coverLetter == null || coverLetter.isBlank() ? null : coverLetter.trim();
+        Application application = new Application(candidate, jobPosting, trimmedCoverLetter);
+        application.setAppliedAt(LocalDateTime.now());
+        application.setStatus(ApplicationStatus.SUBMITTED);
+        Application saved = applicationRepository.save(application);
+        statusHistoryRepository.save(new ApplicationStatusHistory(
+                saved, null, ApplicationStatus.SUBMITTED.name(), null, "Ứng viên nộp đơn ứng tuyển"));
+        return saved;
     }
 
     @Transactional
