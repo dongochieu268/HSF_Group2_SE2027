@@ -64,9 +64,11 @@ public class JobPostingService {
                 .orElseThrow(() -> notFound(id));
     }
 
+    // SCR-14: cho phép xem chi tiết job dù không ACTIVE, để hiển thị banner
+    // "Position closed" thay vì trả 404 khi có deep-link tới job đã đóng/nháp
     @Transactional(readOnly = true)
     public JobPosting findPublicDetail(Long id) {
-        return jobPostingRepository.findActiveByIdWithDetails(id)
+        return jobPostingRepository.findByIdWithDetails(id)
                 .orElseThrow(() -> notFound(id));
     }
 
