@@ -51,6 +51,7 @@ nav a:hover { color: var(--brand); }
 .password-toggle { flex: 0 0 auto; min-width: 70px; padding: 0 12px; color: var(--brand); background: #fff; border: 1px solid #aeb8c8; border-radius: 6px; font: inherit; font-weight: 700; cursor: pointer; }
 .password-toggle:hover { border-color: var(--brand); background: #f0fbf7; }
 .field-error { display: block; margin-top: 5px; color: #b42318; font-size: 14px; }
+.field-hint { display: block; margin-top: 5px; color: var(--muted); font-size: 14px; }
 .alert { margin-bottom: 18px; padding: 12px 14px; border-radius: 6px; }
 .alert-error { color: #7a271a; background: #fef3f2; border: 1px solid #fecdca; }
 .alert-success { color: #05603a; background: #ecfdf3; border: 1px solid #abefc6; }
