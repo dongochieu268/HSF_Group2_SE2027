@@ -51,6 +51,7 @@ nav a:hover { color: var(--brand); }
 .password-toggle { flex: 0 0 auto; min-width: 70px; padding: 0 12px; color: var(--brand); background: #fff; border: 1px solid #aeb8c8; border-radius: 6px; font: inherit; font-weight: 700; cursor: pointer; }
 .password-toggle:hover { border-color: var(--brand); background: #f0fbf7; }
 .field-error { display: block; margin-top: 5px; color: #b42318; font-size: 14px; }
+.field-hint { display: block; margin-top: 5px; color: var(--muted); font-size: 14px; }
 .star-rating { display: flex; flex-direction: row-reverse; justify-content: flex-end; gap: 4px; }
 .star-rating input { position: absolute; opacity: 0; width: 1px; height: 1px; }
 .star-rating label { font-size: 32px; line-height: 1; color: #d8dee9; cursor: pointer; }

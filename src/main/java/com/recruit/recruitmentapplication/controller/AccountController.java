@@ -4,6 +4,7 @@ import com.recruit.recruitmentapplication.dto.ChangePasswordForm;
 import com.recruit.recruitmentapplication.dto.SessionUser;
 import com.recruit.recruitmentapplication.dto.UpdateProfileForm;
 import com.recruit.recruitmentapplication.entity.User;
+import com.recruit.recruitmentapplication.security.PasswordPolicy;
 import com.recruit.recruitmentapplication.service.UserService;
 import com.recruit.recruitmentapplication.util.SessionConstants;
 import jakarta.servlet.http.HttpSession;
@@ -61,11 +62,34 @@ public class AccountController {
     @PostMapping("/profile/password")
     public String changePassword(@Valid @ModelAttribute("changePasswordForm") ChangePasswordForm form,
                                  BindingResult result, HttpSession session, Model model) {
+        // Field bỏ trống: dừng ngay, các kiểm tra bên dưới cần giá trị khác null
         if (result.hasErrors()) {
             return "auth/change-password";
         }
+
+        Long userId = current(session).getId();
+        // SCR-04: mỗi lỗi hiển thị inline ngay dưới field gây lỗi, không gom vào banner chung
+        if (!userService.matchesCurrentPassword(userId, form.getCurrentPassword())) {
+            result.rejectValue("currentPassword", "password.current.invalid",
+                    "Mật khẩu hiện tại không đúng");
+        }
+        for (String violation : PasswordPolicy.violations(form.getNewPassword())) {
+            result.rejectValue("newPassword", "password.weak", violation);
+        }
+        if (userService.matchesCurrentPassword(userId, form.getNewPassword())) {
+            result.rejectValue("newPassword", "password.unchanged",
+                    "Mật khẩu mới phải khác mật khẩu hiện tại");
+        }
+        if (!form.getNewPassword().equals(form.getConfirmNewPassword())) {
+            result.rejectValue("confirmNewPassword", "password.mismatch",
+                    "Mật khẩu xác nhận không khớp");
+        }
+        if (result.hasErrors()) {
+            return "auth/change-password";
+        }
+
         try {
-            userService.changePassword(current(session).getId(), form);
+            userService.changePassword(userId, form);
             return "redirect:/profile?passwordChanged=true";
         } catch (IllegalArgumentException ex) {
             model.addAttribute("passwordError", ex.getMessage());

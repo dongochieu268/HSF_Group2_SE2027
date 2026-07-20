@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
 @RequestMapping("/auth")
@@ -62,15 +63,20 @@ public class AuthController {
     }
 
     @GetMapping("/login")
-    public String showLoginForm(Model model) {
+    public String showLoginForm(@RequestParam(required = false) String redirect, Model model) {
         model.addAttribute("loginForm", new LoginForm());
+        model.addAttribute("redirectTo", safeRedirect(redirect));
         return "auth/login";
     }
 
     @PostMapping("/login")
     public String processLogin(@Valid @ModelAttribute("loginForm") LoginForm form,
-                               BindingResult result, HttpSession session, HttpServletRequest request, Model model) {
+                               BindingResult result,
+                               @RequestParam(required = false) String redirect,
+                               HttpSession session, HttpServletRequest request, Model model) {
+        String safeRedirect = safeRedirect(redirect);
         if (result.hasErrors()) {
+            model.addAttribute("redirectTo", safeRedirect);
             return "auth/login";
         }
 
@@ -79,11 +85,16 @@ public class AuthController {
             activityLogService.log(ActivityEventType.SIGN_IN_FAILURE, null,
                     "Đăng nhập thất bại cho tài khoản '" + form.getUsername() + "'", request.getRemoteAddr());
             model.addAttribute("loginError", "Sai tài khoản, mật khẩu hoặc tài khoản đã bị khóa");
+            model.addAttribute("redirectTo", safeRedirect);
             return "auth/login";
         }
 
         session.setAttribute(SessionConstants.LOGGED_IN_USER, SessionUser.from(user));
         activityLogService.log(ActivityEventType.SIGN_IN_SUCCESS, user, "Đăng nhập thành công", request.getRemoteAddr());
+        // SCR-14: quay lại đúng trang job trước đó nếu đăng nhập được kích hoạt từ đó
+        if (safeRedirect != null) {
+            return "redirect:" + safeRedirect;
+        }
         if (Role.ADMIN.equals(user.getRole().getName())) {
             return "redirect:/admin/dashboard";
         }
@@ -94,6 +105,17 @@ public class AuthController {
             return "redirect:/my-applications";
         }
         return "redirect:/";
+    }
+
+    // Chỉ chấp nhận đường dẫn nội bộ tương đối để tránh open-redirect
+    private String safeRedirect(String redirect) {
+        if (redirect == null || redirect.isBlank()) {
+            return null;
+        }
+        if (!redirect.startsWith("/") || redirect.startsWith("//")) {
+            return null;
+        }
+        return redirect;
     }
 
     @GetMapping("/logout")

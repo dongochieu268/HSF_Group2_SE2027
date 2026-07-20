@@ -1,6 +1,5 @@
 package com.recruit.recruitmentapplication.controller;
 
-import com.recruit.recruitmentapplication.dto.JobPostingForm;
 import com.recruit.recruitmentapplication.dto.SessionUser;
 import com.recruit.recruitmentapplication.entity.JobPosting;
 import com.recruit.recruitmentapplication.entity.Role;
@@ -12,6 +11,7 @@ import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
@@ -35,10 +35,12 @@ public class JobPostingController {
         return "jobposting/list";
     }
 
+    // SCR-14: Public Job Detail. Form ứng tuyển được gộp inline vào trang này (không còn trang riêng)
     @GetMapping("/{id}")
     public String detail(@PathVariable Long id, Model model, HttpSession session) {
         JobPosting job = jobPostingService.findPublicDetail(id);
         model.addAttribute("job", job);
+        model.addAttribute("jobActive", job.getStatus() == JobPosting.PostingStatus.ACTIVE);
 
         SessionUser user = current(session);
         boolean isCandidate = user != null && Role.CANDIDATE.equals(user.getRoleName());
@@ -52,40 +54,24 @@ public class JobPostingController {
         return "jobposting/detail";
     }
 
-    // "Apply Now": hiển thị cho ứng viên chưa nộp đơn cho công việc này {S3}
-    @GetMapping("/{id}/apply")
-    public String showApplyForm(@PathVariable Long id, Model model, HttpSession session) {
-        SessionUser user = current(session);
-        if (user == null || !Role.CANDIDATE.equals(user.getRoleName())) {
-            return "redirect:/error/403";
-        }
-        JobPosting job = jobPostingService.findPublicDetail(id);
-        Long candidateId = candidateService.getOrCreateProfileForUser(user.getId()).getId();
-        if (applicationService.hasApplied(candidateId, id)) {
-            return "redirect:/jobs/" + id;
-        }
-        model.addAttribute("job", job);
-        return "application/apply-form";
-    }
-
+    // "Apply Now": ứng viên nộp đơn ngay trên SCR-14, không chuyển trang {S3}
     @PostMapping("/{id}/apply")
     public String submitApplication(@PathVariable Long id, @RequestParam(required = false) String coverLetter,
-                                    Model model, HttpSession session, RedirectAttributes redirectAttributes) {
+                                    @RequestParam("cvFile") MultipartFile cvFile,
+                                    HttpSession session, RedirectAttributes redirectAttributes) {
         SessionUser user = current(session);
         if (user == null || !Role.CANDIDATE.equals(user.getRoleName())) {
             return "redirect:/error/403";
         }
         Long candidateId = candidateService.getOrCreateProfileForUser(user.getId()).getId();
         try {
-            applicationService.apply(id, candidateId, coverLetter);
-            redirectAttributes.addFlashAttribute("successMessage", "Nộp đơn ứng tuyển thành công!");
-            return "redirect:/my-applications";
+            applicationService.apply(id, candidateId, coverLetter, cvFile);
+            redirectAttributes.addFlashAttribute("justApplied", true);
         } catch (IllegalArgumentException exception) {
-            model.addAttribute("job", jobPostingService.findPublicDetail(id));
-            model.addAttribute("coverLetter", coverLetter);
-            model.addAttribute("errorMessage", exception.getMessage());
-            return "application/apply-form";
+            redirectAttributes.addFlashAttribute("errorMessage", exception.getMessage());
+            redirectAttributes.addFlashAttribute("coverLetter", coverLetter);
         }
+        return "redirect:/jobs/" + id;
     }
 
     private SessionUser current(HttpSession session) {
