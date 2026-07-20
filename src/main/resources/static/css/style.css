@@ -51,6 +51,13 @@ nav a:hover { color: var(--brand); }
 .password-toggle { flex: 0 0 auto; min-width: 70px; padding: 0 12px; color: var(--brand); background: #fff; border: 1px solid #aeb8c8; border-radius: 6px; font: inherit; font-weight: 700; cursor: pointer; }
 .password-toggle:hover { border-color: var(--brand); background: #f0fbf7; }
 .field-error { display: block; margin-top: 5px; color: #b42318; font-size: 14px; }
+.star-rating { display: flex; flex-direction: row-reverse; justify-content: flex-end; gap: 4px; }
+.star-rating input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.star-rating label { font-size: 32px; line-height: 1; color: #d8dee9; cursor: pointer; }
+.star-rating label:hover,
+.star-rating label:hover ~ label,
+.star-rating input:checked ~ label { color: #f5a623; }
+.rating-stars { color: #f5a623; font-size: 18px; }
 .alert { margin-bottom: 18px; padding: 12px 14px; border-radius: 6px; }
 .alert-error { color: #7a271a; background: #fef3f2; border: 1px solid #fecdca; }
 .alert-success { color: #05603a; background: #ecfdf3; border: 1px solid #abefc6; }
