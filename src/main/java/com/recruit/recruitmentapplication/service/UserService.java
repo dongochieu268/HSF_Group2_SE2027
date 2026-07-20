@@ -12,6 +12,7 @@ import com.recruit.recruitmentapplication.entity.User.AccountStatus;
 import com.recruit.recruitmentapplication.repository.CandidateRepository;
 import com.recruit.recruitmentapplication.repository.RoleRepository;
 import com.recruit.recruitmentapplication.repository.UserRepository;
+import com.recruit.recruitmentapplication.security.PasswordPolicy;
 import com.recruit.recruitmentapplication.security.PasswordUtil;
 import java.util.List;
 import java.util.Optional;
@@ -174,6 +175,18 @@ public class UserService {
         return userRepository.save(user);
     }
 
+    /**
+     * Kiểm tra một mật khẩu thô có khớp mật khẩu hiện tại của user hay không.
+     * Dùng ở SCR-04 để gắn lỗi vào đúng field thay vì ném exception chung.
+     */
+    @Transactional(readOnly = true)
+    public boolean matchesCurrentPassword(Long userId, String rawPassword) {
+        if (rawPassword == null) {
+            return false;
+        }
+        return passwordUtil.matches(rawPassword, findById(userId).getPassword());
+    }
+
     @Transactional
     public User changePassword(Long userId, ChangePasswordForm form) {
         User user = findById(userId);
@@ -186,6 +199,10 @@ public class UserService {
         }
         if (passwordUtil.matches(form.getNewPassword(), user.getPassword())) {
             throw new IllegalArgumentException("Mật khẩu mới phải khác mật khẩu hiện tại");
+        }
+        List<String> violations = PasswordPolicy.violations(form.getNewPassword());
+        if (!violations.isEmpty()) {
+            throw new IllegalArgumentException(String.join("; ", violations));
         }
 
         user.setPassword(passwordUtil.hash(form.getNewPassword()));
