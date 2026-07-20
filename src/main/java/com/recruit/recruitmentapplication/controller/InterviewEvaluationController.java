@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 
 @Controller
@@ -46,15 +47,17 @@ public class InterviewEvaluationController {
         }
     }
 
+    // SCR-19: nộp xong quay về SCR-17 (Application Detail - Interviewer view) kèm flash message
     @PostMapping("/{id}/evaluate")
     public String submitEvaluation(@PathVariable Long id,
                                    @RequestParam Integer rating,
                                    @RequestParam String feedback,
-                                   Model model, HttpSession session) {
+                                   Model model, HttpSession session, RedirectAttributes redirectAttributes) {
         SessionUser user = current(session);
         try {
-            evaluationService.submitEvaluation(id, user, rating, feedback);
-            return "redirect:/interviews";
+            Interview interview = evaluationService.submitEvaluation(id, user, rating, feedback);
+            redirectAttributes.addFlashAttribute("successMessage", "Evaluation submitted. Thank you.");
+            return "redirect:/manage/applications/" + interview.getApplication().getId();
         } catch (IllegalArgumentException exception) {
             try {
                 Interview interview = evaluationService.findMyInterviewOrThrow(id, user);

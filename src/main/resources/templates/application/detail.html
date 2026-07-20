@@ -31,6 +31,9 @@
         </div>
     </div>
 
+    <!-- SCR-19: flash message sau khi Interviewer nộp đánh giá thành công -->
+    <p class="alert alert-success" th:if="${successMessage}" th:text="${successMessage}"></p>
+
     <!-- SCR-17: banner ở trạng thái cuối, không còn hành động pipeline nào khác -->
     <p class="alert alert-success" th:if="${displayStatus == 'HIRED'}">This candidate has been hired.</p>
     <p class="alert alert-error" th:if="${displayStatus == 'REJECTED'}">This candidate has been rejected.</p>
