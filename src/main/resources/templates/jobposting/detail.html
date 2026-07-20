@@ -44,9 +44,10 @@
             <h3>Mô tả công việc</h3>
             <p th:text="${job.description}"></p>
         </div>
-        <div class="read-block">
+        <!-- SCR-14: chỉ hiện khi requirements không rỗng -->
+        <div class="read-block" th:if="${job.requirements != null and not #strings.isEmpty(job.requirements)}">
             <h3>Yêu cầu công việc</h3>
-            <p th:text="${job.requirements ?: '-'}"></p>
+            <p th:text="${job.requirements}"></p>
         </div>
         <div class="read-block">
             <h3>Kỹ năng yêu cầu</h3>
@@ -54,14 +55,53 @@
             <span class="badge skill-badge" th:each="s : ${job.requiredSkills}" th:text="${s.name}"></span>
         </div>
     </section>
-    <section class="apply-panel">
-        <a class="button button-primary" th:if="${isCandidate and !hasApplied}"
-           th:href="@{/jobs/{id}/apply(id=${job.id})}">Ứng tuyển ngay</a>
-        <p class="alert alert-success" th:if="${isCandidate and hasApplied}">Bạn đã ứng tuyển vị trí này.</p>
-        <p class="muted" th:if="${session.loggedInUser == null}">
-            <a class="text-link" th:href="@{/auth/login}">Đăng nhập bằng tài khoản ứng viên</a> để ứng tuyển vị trí này.
+
+    <section class="apply-panel detail-panel">
+        <div class="alert alert-error" th:if="${errorMessage}" th:text="${errorMessage}"></div>
+
+        <!-- Đã ứng tuyển (mọi trạng thái, kể cả WITHDRAWN): không thể ứng tuyển lại -->
+        <div th:if="${isCandidate and hasApplied}">
+            <p class="alert alert-success" th:if="${justApplied}">
+                Đơn ứng tuyển của bạn đã được nộp thành công. Theo dõi trạng thái tại
+                <a class="text-link" th:href="@{/my-applications}">Đơn ứng tuyển của tôi</a>.
+            </p>
+            <p class="alert alert-info" th:unless="${justApplied}">
+                Bạn đã ứng tuyển vị trí này.
+                <a class="text-link" th:href="@{/my-applications}">Xem đơn ứng tuyển của tôi</a>.
+            </p>
+        </div>
+
+        <!-- Job không còn ACTIVE và ứng viên chưa từng ứng tuyển: không cho ứng tuyển -->
+        <p class="alert alert-info" th:if="${!jobActive and !(isCandidate and hasApplied)}">
+            Vị trí này hiện không còn nhận hồ sơ ứng tuyển.
         </p>
+
+        <!-- Guest, job đang ACTIVE: mời đăng nhập hoặc tạo tài khoản để ứng tuyển -->
+        <p class="muted" th:if="${jobActive and session.loggedInUser == null}">
+            <a class="text-link" th:href="@{/auth/login(redirect=|/jobs/${job.id}|)}">Đăng nhập</a>
+            hoặc
+            <a class="text-link" th:href="@{/auth/register}">tạo tài khoản</a>
+            để ứng tuyển vị trí này.
+        </p>
+
+        <!-- Candidate, job đang ACTIVE, chưa ứng tuyển: form ứng tuyển ngay tại trang này -->
+        <form th:if="${isCandidate and jobActive and !hasApplied}"
+              method="post" th:action="@{/jobs/{id}/apply(id=${job.id})}" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="coverLetter">Thư giới thiệu (không bắt buộc)</label>
+                <textarea class="form-control" id="coverLetter" name="coverLetter" rows="6"
+                          maxlength="3000"
+                          placeholder="Giới thiệu ngắn gọn về bản thân và lý do bạn phù hợp với vị trí này..."
+                          th:text="${coverLetter}"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="cvFile">CV đính kèm (bắt buộc — PDF hoặc DOCX, tối đa 5MB)</label>
+                <input class="form-control" id="cvFile" type="file" name="cvFile" accept=".pdf,.docx" required>
+            </div>
+            <button class="button button-primary" type="submit">Nộp đơn ứng tuyển</button>
+        </form>
     </section>
+
     <a class="text-link" th:href="@{/jobs}">Quay lại danh sách việc làm</a>
 </main>
 <footer th:replace="~{layout/base :: footer}"></footer>
