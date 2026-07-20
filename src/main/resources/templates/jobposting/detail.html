@@ -80,7 +80,7 @@
         <p class="muted" th:if="${jobActive and session.loggedInUser == null}">
             <a class="text-link" th:href="@{/auth/login(redirect=|/jobs/${job.id}|)}">Đăng nhập</a>
             hoặc
-            <a class="text-link" th:href="@{/auth/register}">tạo tài khoản</a>
+            <a class="text-link" th:href="@{/auth/register(redirect=|/jobs/${job.id}|)}">tạo tài khoản</a>
             để ứng tuyển vị trí này.
         </p>
 

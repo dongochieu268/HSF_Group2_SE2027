@@ -33,31 +33,44 @@ public class AuthController {
     }
 
     @GetMapping("/register")
-    public String showRegisterForm(Model model) {
+    public String showRegisterForm(@RequestParam(required = false) String redirect, Model model) {
         model.addAttribute("registerForm", new RegisterForm());
+        model.addAttribute("redirectTo", safeRedirect(redirect));
         return "auth/register";
     }
 
+    // SCR-14: guest bấm "tạo tài khoản" từ trang job -> đăng ký xong vẫn phải quay lại
+    // đúng trang job đó để đăng nhập rồi ứng tuyển, không được rơi về trang mặc định
     @PostMapping("/register")
     public String processRegister(@Valid @ModelAttribute("registerForm") RegisterForm form,
-                                  BindingResult result, Model model) {
+                                  BindingResult result,
+                                  @RequestParam(required = false) String redirect, Model model) {
+        String safeRedirect = safeRedirect(redirect);
         if (result.hasErrors()) {
+            model.addAttribute("redirectTo", safeRedirect);
             return "auth/register";
         }
         if (form.getConfirmPassword() == null || form.getConfirmPassword().isBlank()) {
             result.rejectValue("confirmPassword", "confirmPassword.required", "Vui lòng xác nhận mật khẩu");
+            model.addAttribute("redirectTo", safeRedirect);
             return "auth/register";
         }
         if (!form.getPassword().equals(form.getConfirmPassword())) {
             result.rejectValue("confirmPassword", "confirmPassword.mismatch", "Mật khẩu xác nhận không khớp");
+            model.addAttribute("redirectTo", safeRedirect);
             return "auth/register";
         }
         try {
             User user = userService.register(form);
             activityLogService.log(ActivityEventType.ACCOUNT_CREATED, user, "Tài khoản được tạo qua đăng ký", null);
-            return "redirect:/auth/login?registered=true";
+            String loginUrl = "/auth/login?registered=true";
+            if (safeRedirect != null) {
+                loginUrl += "&redirect=" + java.net.URLEncoder.encode(safeRedirect, java.nio.charset.StandardCharsets.UTF_8);
+            }
+            return "redirect:" + loginUrl;
         } catch (IllegalArgumentException ex) {
             model.addAttribute("registrationError", ex.getMessage());
+            model.addAttribute("redirectTo", safeRedirect);
             return "auth/register";
         }
     }
