@@ -3,6 +3,8 @@ package com.recruit.recruitmentapplication.service;
 import com.recruit.recruitmentapplication.dto.SessionUser;
 import com.recruit.recruitmentapplication.entity.Application;
 import com.recruit.recruitmentapplication.entity.Application.ApplicationStatus;
+import com.recruit.recruitmentapplication.entity.ApplicationDocument;
+import com.recruit.recruitmentapplication.entity.ApplicationDocument.DocumentType;
 import com.recruit.recruitmentapplication.entity.ApplicationNote;
 import com.recruit.recruitmentapplication.entity.ApplicationStatusHistory;
 import com.recruit.recruitmentapplication.entity.Candidate;
@@ -21,9 +23,11 @@ import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 public class ApplicationService {
@@ -49,6 +53,13 @@ public class ApplicationService {
     private static final List<String> DISPLAY_BUCKETS =
             List.of("APPLIED", "SCREENING", "INTERVIEW", "OFFER", "HIRED", "REJECTED", "WITHDRAWN");
 
+    // SCR-14: CV file upload - Required. PDF or DOCX only. Max 5 MB.
+    private static final long MAX_CV_SIZE_BYTES = 5L * 1024 * 1024;
+    private static final Set<String> ALLOWED_CV_CONTENT_TYPES = Set.of(
+            "application/pdf",
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document");
+    private static final Set<String> ALLOWED_CV_EXTENSIONS = Set.of(".pdf", ".docx");
+
     private final ApplicationRepository applicationRepository;
     private final ApplicationNoteRepository applicationNoteRepository;
     private final ApplicationStatusHistoryRepository statusHistoryRepository;
@@ -56,6 +67,7 @@ public class ApplicationService {
     private final UserRepository userRepository;
     private final CandidateRepository candidateRepository;
     private final JobPostingRepository jobPostingRepository;
+    private final FileStorageService fileStorageService;
 
     public ApplicationService(ApplicationRepository applicationRepository,
                               ApplicationNoteRepository applicationNoteRepository,
@@ -63,7 +75,8 @@ public class ApplicationService {
                               ApplicationDocumentRepository applicationDocumentRepository,
                               UserRepository userRepository,
                               CandidateRepository candidateRepository,
-                              JobPostingRepository jobPostingRepository) {
+                              JobPostingRepository jobPostingRepository,
+                              FileStorageService fileStorageService) {
         this.applicationRepository = applicationRepository;
         this.applicationNoteRepository = applicationNoteRepository;
         this.statusHistoryRepository = statusHistoryRepository;
@@ -71,6 +84,7 @@ public class ApplicationService {
         this.userRepository = userRepository;
         this.candidateRepository = candidateRepository;
         this.jobPostingRepository = jobPostingRepository;
+        this.fileStorageService = fileStorageService;
     }
 
     public static String displayStatus(ApplicationStatus status) {
@@ -222,7 +236,7 @@ public class ApplicationService {
     }
 
     @Transactional
-    public Application apply(Long jobId, Long candidateId, String coverLetter) {
+    public Application apply(Long jobId, Long candidateId, String coverLetter, MultipartFile cvFile) {
         JobPosting jobPosting = jobPostingRepository.findActiveByIdWithDetails(jobId)
                 .orElseThrow(() -> new IllegalArgumentException(
                         "Vị trí tuyển dụng không tồn tại hoặc không còn nhận hồ sơ"));
@@ -231,6 +245,8 @@ public class ApplicationService {
         if (applicationRepository.existsByCandidate_IdAndJobPosting_Id(candidateId, jobId)) {
             throw new IllegalArgumentException("Bạn đã ứng tuyển vị trí này rồi");
         }
+        validateCv(cvFile);
+
         String trimmedCoverLetter = coverLetter == null || coverLetter.isBlank() ? null : coverLetter.trim();
         Application application = new Application(candidate, jobPosting, trimmedCoverLetter);
         application.setAppliedAt(LocalDateTime.now());
@@ -238,7 +254,36 @@ public class ApplicationService {
         Application saved = applicationRepository.save(application);
         statusHistoryRepository.save(new ApplicationStatusHistory(
                 saved, null, ApplicationStatus.SUBMITTED.name(), null, "Ứng viên nộp đơn ứng tuyển"));
+
+        String storagePath = fileStorageService.store(cvFile, "applications/" + saved.getId());
+        applicationDocumentRepository.save(new ApplicationDocument(
+                saved, DocumentType.CV, cvFile.getOriginalFilename(), cvFile.getContentType(),
+                cvFile.getSize(), storagePath));
         return saved;
+    }
+
+    // SCR-14: CV bắt buộc, chỉ nhận PDF/DOCX, tối đa 5MB
+    private void validateCv(MultipartFile cvFile) {
+        if (cvFile == null || cvFile.isEmpty()) {
+            throw new IllegalArgumentException("Vui lòng đính kèm CV (bắt buộc)");
+        }
+        if (cvFile.getSize() > MAX_CV_SIZE_BYTES) {
+            throw new IllegalArgumentException("Dung lượng CV vượt quá 5MB");
+        }
+        String extension = extensionOf(cvFile.getOriginalFilename());
+        boolean validExtension = ALLOWED_CV_EXTENSIONS.contains(extension.toLowerCase());
+        boolean validContentType = ALLOWED_CV_CONTENT_TYPES.contains(cvFile.getContentType());
+        if (!validExtension || !validContentType) {
+            throw new IllegalArgumentException("CV chỉ chấp nhận định dạng PDF hoặc DOCX");
+        }
+    }
+
+    private String extensionOf(String originalFileName) {
+        if (originalFileName == null) {
+            return "";
+        }
+        int dotIndex = originalFileName.lastIndexOf('.');
+        return dotIndex < 0 ? "" : originalFileName.substring(dotIndex);
     }
 
     @Transactional
