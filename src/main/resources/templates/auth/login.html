@@ -6,6 +6,7 @@
 <main class="container page-content">
     <div class="page-heading"><p class="eyebrow">Tài khoản</p><h1>Đăng nhập</h1><p>Đăng nhập bằng tài khoản đã đăng ký.</p></div>
     <form class="form-panel" th:action="@{/auth/login}" th:object="${loginForm}" method="post">
+        <input type="hidden" name="redirect" th:if="${redirectTo != null}" th:value="${redirectTo}">
         <div class="alert alert-success" th:if="${param.registered != null}">Đăng ký thành công. Bạn có thể đăng nhập.</div>
         <div class="alert alert-success" th:if="${param.logout != null}">Bạn đã đăng xuất.</div>
         <div class="alert alert-success" th:if="${param.reset != null}">Password updated - please sign in with your new password.</div>
