@@ -48,8 +48,9 @@ public class EvaluationService {
         return evaluationRepository.findByInterview_Id(interviewId).orElse(null);
     }
 
+    // SCR-19: trả về Interview để controller lấy applicationId, điều hướng về SCR-17 sau khi nộp
     @Transactional
-    public void submitEvaluation(Long interviewId, SessionUser sessionUser, Integer rating, String feedback) {
+    public Interview submitEvaluation(Long interviewId, SessionUser sessionUser, Integer rating, String feedback) {
         Interview interview = interviewRepository.findById(interviewId)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy lịch phỏng vấn id=" + interviewId));
         ensureIsAssignedInterviewer(interview, sessionUser);
@@ -69,6 +70,7 @@ public class EvaluationService {
 
         Evaluation evaluation = new Evaluation(interview, interviewer, rating, feedback.trim());
         evaluationRepository.save(evaluation);
+        return interview;
     }
 
     private void ensureIsAssignedInterviewer(Interview interview, SessionUser sessionUser) {
