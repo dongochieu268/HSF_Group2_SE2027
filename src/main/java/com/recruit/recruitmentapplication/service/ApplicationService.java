@@ -8,6 +8,7 @@ import com.recruit.recruitmentapplication.entity.ApplicationDocument.DocumentTyp
 import com.recruit.recruitmentapplication.entity.ApplicationNote;
 import com.recruit.recruitmentapplication.entity.ApplicationStatusHistory;
 import com.recruit.recruitmentapplication.entity.Candidate;
+import com.recruit.recruitmentapplication.entity.Evaluation;
 import com.recruit.recruitmentapplication.entity.Interview;
 import com.recruit.recruitmentapplication.entity.JobPosting;
 import com.recruit.recruitmentapplication.entity.Role;
@@ -17,14 +18,18 @@ import com.recruit.recruitmentapplication.repository.ApplicationNoteRepository;
 import com.recruit.recruitmentapplication.repository.ApplicationRepository;
 import com.recruit.recruitmentapplication.repository.ApplicationStatusHistoryRepository;
 import com.recruit.recruitmentapplication.repository.CandidateRepository;
+import com.recruit.recruitmentapplication.repository.EvaluationRepository;
 import com.recruit.recruitmentapplication.repository.JobPostingRepository;
 import com.recruit.recruitmentapplication.repository.UserRepository;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -64,15 +69,20 @@ public class ApplicationService {
     private final ApplicationNoteRepository applicationNoteRepository;
     private final ApplicationStatusHistoryRepository statusHistoryRepository;
     private final ApplicationDocumentRepository applicationDocumentRepository;
+    private final EvaluationRepository evaluationRepository;
     private final UserRepository userRepository;
     private final CandidateRepository candidateRepository;
     private final JobPostingRepository jobPostingRepository;
     private final FileStorageService fileStorageService;
 
+    @Value("${app.upload.dir:uploads}")
+    private String uploadDir;
+
     public ApplicationService(ApplicationRepository applicationRepository,
                               ApplicationNoteRepository applicationNoteRepository,
                               ApplicationStatusHistoryRepository statusHistoryRepository,
                               ApplicationDocumentRepository applicationDocumentRepository,
+                              EvaluationRepository evaluationRepository,
                               UserRepository userRepository,
                               CandidateRepository candidateRepository,
                               JobPostingRepository jobPostingRepository,
@@ -81,6 +91,7 @@ public class ApplicationService {
         this.applicationNoteRepository = applicationNoteRepository;
         this.statusHistoryRepository = statusHistoryRepository;
         this.applicationDocumentRepository = applicationDocumentRepository;
+        this.evaluationRepository = evaluationRepository;
         this.userRepository = userRepository;
         this.candidateRepository = candidateRepository;
         this.jobPostingRepository = jobPostingRepository;
@@ -93,6 +104,33 @@ public class ApplicationService {
 
     public static boolean canWithdraw(ApplicationStatus status) {
         return WITHDRAWABLE_BUCKETS.contains(displayStatus(status));
+    }
+
+    // SCR-17: pipeline stage controls context-sensitive theo trạng thái hiện tại,
+    // ẩn hoàn toàn ở các trạng thái cuối (HIRED/REJECTED/WITHDRAWN)
+    public static boolean isTerminal(ApplicationStatus status) {
+        String bucket = displayStatus(status);
+        return bucket.equals("HIRED") || bucket.equals("REJECTED") || bucket.equals("WITHDRAWN");
+    }
+
+    public static ApplicationStatus nextStageStatus(ApplicationStatus status) {
+        return switch (displayStatus(status)) {
+            case "APPLIED" -> ApplicationStatus.SCREENING;
+            case "SCREENING" -> ApplicationStatus.INTERVIEW;
+            case "INTERVIEW" -> ApplicationStatus.OFFER;
+            case "OFFER" -> ApplicationStatus.HIRED;
+            default -> null;
+        };
+    }
+
+    public static String nextStageLabel(ApplicationStatus status) {
+        return switch (displayStatus(status)) {
+            case "APPLIED" -> "Chuyển sang Screening";
+            case "SCREENING" -> "Chuyển sang Interview";
+            case "INTERVIEW" -> "Chuyển sang Offer";
+            case "OFFER" -> "Đánh dấu Hired";
+            default -> null;
+        };
     }
 
     @Transactional(readOnly = true)
@@ -141,6 +179,34 @@ public class ApplicationService {
         return application;
     }
 
+    // SCR-17: HR/Admin (quản lý đầy đủ) hoặc Interviewer (chỉ xem, cho application được assign)
+    @Transactional(readOnly = true)
+    public Application findDetailForViewer(Long applicationId, SessionUser user) {
+        Application application = applicationRepository.findWithDetailsById(applicationId)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy đơn ứng tuyển id=" + applicationId));
+        ensureCanView(application, user);
+        return application;
+    }
+
+    private void ensureCanView(Application application, SessionUser user) {
+        if (user == null) {
+            throw new IllegalArgumentException("Access denied");
+        }
+        if (Role.ADMIN.equals(user.getRoleName()) || Role.HR_MANAGER.equals(user.getRoleName())) {
+            ensureCanManage(application, user);
+            return;
+        }
+        if (Role.INTERVIEWER.equals(user.getRoleName())) {
+            boolean assigned = application.getInterviews().stream()
+                    .anyMatch(iv -> iv.getInterviewer() != null && iv.getInterviewer().getId().equals(user.getId()));
+            if (!assigned) {
+                throw new IllegalArgumentException("Access denied");
+            }
+            return;
+        }
+        throw new IllegalArgumentException("Access denied");
+    }
+
     @Transactional(readOnly = true)
     public List<ApplicationNote> listNotes(Long applicationId) {
         return applicationNoteRepository.findByApplication_IdOrderByCreatedAtDesc(applicationId);
@@ -152,8 +218,27 @@ public class ApplicationService {
     }
 
     @Transactional(readOnly = true)
-    public List<com.recruit.recruitmentapplication.entity.ApplicationDocument> listDocuments(Long applicationId) {
+    public List<ApplicationDocument> listDocuments(Long applicationId) {
         return applicationDocumentRepository.findByApplication_IdOrderByUploadedAtDesc(applicationId);
+    }
+
+    // SCR-17: "Evaluation summary" - danh sách đánh giá đã nộp cho đơn ứng tuyển này
+    @Transactional(readOnly = true)
+    public List<Evaluation> listEvaluations(Long applicationId) {
+        return evaluationRepository.findByApplicationId(applicationId);
+    }
+
+    // SCR-17: "Download CV" - quyền được kiểm tra server-side trước khi trả file
+    @Transactional(readOnly = true)
+    public ApplicationDocument findDocumentForDownload(Long applicationId, Long documentId, SessionUser user) {
+        Application application = findDetailForViewer(applicationId, user);
+        return applicationDocumentRepository.findById(documentId)
+                .filter(doc -> doc.getApplication().getId().equals(application.getId()))
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy tài liệu"));
+    }
+
+    public Path resolveStoragePath(String storagePath) {
+        return Paths.get(uploadDir).toAbsolutePath().normalize().resolve(storagePath);
     }
 
     @Transactional

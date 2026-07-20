@@ -7,7 +7,9 @@
     <nav class="breadcrumb" aria-label="Breadcrumb">
         <a th:href="@{/manage/jobs}">Jobs</a>
         <span>/</span>
-        <a th:href="@{/manage/jobs/{id}(id=${app.jobPosting.id})}" th:text="${app.jobPosting.title}"></a>
+        <a th:href="@{/manage/jobs/{id}(id=${app.jobPosting.id})}" th:text="${app.jobPosting.title}">Job</a>
+        <span>/</span>
+        <a th:href="@{/manage/jobs/{id}/applications(id=${app.jobPosting.id})}">Applications</a>
         <span>/</span>
         <span>Application #<span th:text="${app.id}"></span></span>
     </nav>
@@ -28,6 +30,11 @@
                   th:text="${displayStatus}"></span>
         </div>
     </div>
+
+    <!-- SCR-17: banner ở trạng thái cuối, không còn hành động pipeline nào khác -->
+    <p class="alert alert-success" th:if="${displayStatus == 'HIRED'}">This candidate has been hired.</p>
+    <p class="alert alert-error" th:if="${displayStatus == 'REJECTED'}">This candidate has been rejected.</p>
+    <p class="alert alert-info" th:if="${displayStatus == 'WITHDRAWN'}">This candidate withdrew their application.</p>
 
     <div class="detail-layout">
         <div class="detail-main">
@@ -77,13 +84,17 @@
                         <span th:text="${doc.documentType}"></span>
                         <span th:text="${doc.originalFileName}"></span>
                         <span class="muted" th:text="${doc.uploadedAt != null ? #temporals.format(doc.uploadedAt, 'dd/MM/yyyy HH:mm') : '-'}"></span>
+                        <!-- SCR-17: quyền tải được kiểm tra server-side ở endpoint download -->
+                        <a class="button button-secondary button-small"
+                           th:href="@{/manage/applications/{id}/documents/{docId}/download(id=${app.id},docId=${doc.id})}">Download CV</a>
                     </li>
                 </ul>
             </section>
 
-            <section class="detail-panel" aria-label="Ghi chú nội bộ">
+            <!-- SCR-17: [Interviewer] toàn bộ mục ghi chú nội bộ bị ẩn hoàn toàn -->
+            <section class="detail-panel" aria-label="Ghi chú nội bộ" th:if="${canManage}">
                 <h2>Ghi chú nội bộ</h2>
-                <form th:if="${canManage}" th:action="@{/manage/applications/{id}/notes(id=${app.id})}" method="post" class="note-form">
+                <form th:action="@{/manage/applications/{id}/notes(id=${app.id})}" method="post" class="note-form">
                     <div class="form-group form-grid-full">
                         <label for="noteContent">Thêm ghi chú</label>
                         <textarea class="form-control" id="noteContent" name="content" rows="3" required></textarea>
@@ -103,7 +114,7 @@
                 </ul>
             </section>
 
-            <section class="detail-panel" aria-label="Lịch sử trạng thái">
+            <div class="detail-panel" aria-label="Lịch sử trạng thái">
                 <h2>Lịch sử trạng thái</h2>
                 <p class="empty-cell" th:if="${#lists.isEmpty(statusHistory)}">Chưa có thay đổi trạng thái nào được ghi nhận.</p>
                 <ul class="timeline" th:if="${not #lists.isEmpty(statusHistory)}">
@@ -114,26 +125,42 @@
                         <p th:if="${h.note != null and not #strings.isEmpty(h.note)}" th:text="${h.note}"></p>
                     </li>
                 </ul>
+            </div>
+
+            <!-- SCR-17: "Evaluation summary" - [HR Manager, Admin] danh sách đánh giá đã nộp -->
+            <section class="detail-panel" aria-label="Đánh giá phỏng vấn" th:if="${canManage and not #lists.isEmpty(evaluations)}">
+                <h2>Đánh giá phỏng vấn</h2>
+                <ul class="evaluation-list">
+                    <li th:each="ev : ${evaluations}">
+                        <strong th:text="${ev.interviewer.fullName}"></strong>
+                        <span class="muted" th:text="${ev.interview.scheduledAt != null ? #temporals.format(ev.interview.scheduledAt, 'dd/MM/yyyy HH:mm') : '-'}"></span>
+                        <span class="rating-stars">
+                            <span th:each="i : ${#numbers.sequence(1, 5)}"
+                                  th:text="${i <= ev.rating} ? '★' : '☆'"></span>
+                        </span>
+                        <p th:text="${ev.feedback}"></p>
+                        <span class="muted" th:text="'Nộp lúc ' + ${#temporals.format(ev.submittedAt, 'dd/MM/yyyy HH:mm')}"></span>
+                    </li>
+                </ul>
             </section>
 
         </div>
 
         <aside class="detail-sidebar" aria-label="Hành động">
-            <section class="detail-panel" th:if="${canManage}">
+            <!-- SCR-17: pipeline stage controls context-sensitive, ẩn khi ở trạng thái cuối -->
+            <section class="detail-panel" th:if="${canManage and !isTerminalStatus}">
                 <h2>Đổi trạng thái</h2>
                 <form th:action="@{/manage/applications/{id}/status(id=${app.id})}" method="post">
-                    <div class="form-group">
-                        <label for="statusSelect">Trạng thái mới</label>
-                        <select class="form-control" id="statusSelect" name="status">
-                            <option th:each="s : ${statuses}" th:value="${s}" th:text="${s}"
-                                    th:selected="${s == app.status}"></option>
-                        </select>
-                    </div>
+                    <input type="hidden" name="status" th:value="${nextStageStatus}">
+                    <button class="button button-primary" type="submit" th:text="${nextStageLabel}"></button>
+                </form>
+                <form th:action="@{/manage/applications/{id}/status(id=${app.id})}" method="post" style="margin-top: 10px;">
+                    <input type="hidden" name="status" value="REJECTED">
                     <div class="form-group">
                         <label for="statusNote">Ghi chú (tuỳ chọn)</label>
                         <input class="form-control" id="statusNote" name="note" type="text">
                     </div>
-                    <button class="button" type="submit">Cập nhật trạng thái</button>
+                    <button class="button button-danger" type="submit">Reject</button>
                 </form>
             </section>
 
@@ -149,8 +176,21 @@
                     </li>
                 </ul>
 
-                <div th:if="${canManage}" style="margin-top: 20px;">
+                <!-- SCR-17: [HR Manager, Admin] chỉ hiện khi status = INTERVIEW -->
+                <div th:if="${canManage and displayStatus == 'INTERVIEW'}" style="margin-top: 20px;">
                     <a th:href="@{/manage/applications/{id}/interviews/new(id=${app.id})}" class="button">Interview Assignment</a>
+                </div>
+
+                <!-- SCR-17: [Interviewer] nộp đánh giá cho vòng phỏng vấn được assign -->
+                <div th:if="${isInterviewer}" style="margin-top: 20px;">
+                    <div th:each="iv : ${myInterviews}" style="margin-bottom: 10px;">
+                        <p class="alert alert-success" th:if="${evaluatedInterviewIds.contains(iv.id)}">
+                            You have submitted your evaluation for this candidate.
+                        </p>
+                        <a th:unless="${evaluatedInterviewIds.contains(iv.id)}"
+                           th:href="@{/interviews/{ivId}/evaluate(ivId=${iv.id})}"
+                           class="button button-primary">Submit Evaluation</a>
+                    </div>
                 </div>
             </section>
         </aside>
