@@ -4,12 +4,19 @@
 <body>
 <header th:replace="~{layout/base :: header}"></header>
 <main class="container page-content">
-    <nav class="breadcrumb" aria-label="Breadcrumb">
+    <!-- HR/Admin: breadcrumb đầy đủ với link sang Jobs/Applications (chỉ họ có quyền vào các trang đó) -->
+    <nav class="breadcrumb" aria-label="Breadcrumb" th:if="${canManage}">
         <a th:href="@{/manage/jobs}">Jobs</a>
         <span>/</span>
         <a th:href="@{/manage/jobs/{id}(id=${app.jobPosting.id})}" th:text="${app.jobPosting.title}">Job</a>
         <span>/</span>
         <a th:href="@{/manage/jobs/{id}/applications(id=${app.jobPosting.id})}">Applications</a>
+        <span>/</span>
+        <span>Application #<span th:text="${app.id}"></span></span>
+    </nav>
+    <!-- Interviewer: không có quyền vào Jobs/Applications (SCR-10/SCR-16) nên breadcrumb chỉ trỏ về "My Interviews" -->
+    <nav class="breadcrumb" aria-label="Breadcrumb" th:unless="${canManage}">
+        <a th:href="@{/interviews}">My Interviews</a>
         <span>/</span>
         <span>Application #<span th:text="${app.id}"></span></span>
     </nav>
@@ -31,8 +38,9 @@
         </div>
     </div>
 
-    <!-- SCR-19: flash message sau khi Interviewer nộp đánh giá thành công -->
+    <!-- SCR-19: flash message sau khi Interviewer nộp đánh giá (thành công hoặc lỗi) -->
     <p class="alert alert-success" th:if="${successMessage}" th:text="${successMessage}"></p>
+    <p class="alert alert-error" th:if="${errorMessage}" th:text="${errorMessage}"></p>
 
     <!-- SCR-17: banner ở trạng thái cuối, không còn hành động pipeline nào khác -->
     <p class="alert alert-success" th:if="${displayStatus == 'HIRED'}">This candidate has been hired.</p>
@@ -184,22 +192,50 @@
                     <a th:href="@{/manage/applications/{id}/interviews/new(id=${app.id})}" class="button">Interview Assignment</a>
                 </div>
 
-                <!-- SCR-17: [Interviewer] nộp đánh giá cho vòng phỏng vấn được assign -->
+                <!-- SCR-19: [Interviewer] form đánh giá gộp inline ngay tại đây, không chuyển trang -->
                 <div th:if="${isInterviewer}" style="margin-top: 20px;">
-                    <div th:each="iv : ${myInterviews}" style="margin-bottom: 10px;">
+                    <div th:each="iv : ${myInterviews}" style="margin-bottom: 24px;">
+
                         <p class="alert alert-success" th:if="${evaluatedInterviewIds.contains(iv.id)}">
                             You have submitted your evaluation for this candidate.
                         </p>
-                        <a th:unless="${evaluatedInterviewIds.contains(iv.id)}"
-                           th:href="@{/interviews/{ivId}/evaluate(ivId=${iv.id})}"
-                           class="button button-primary">Submit Evaluation</a>
+
+                        <form th:unless="${evaluatedInterviewIds.contains(iv.id)}"
+                              th:action="@{/interviews/{ivId}/evaluate(ivId=${iv.id})}" method="post">
+                            <h3 th:text="'Nộp đánh giá — ' + ${iv.interviewType}"></h3>
+                            <div class="form-group">
+                                <label th:id="'ratingLabel-' + ${iv.id}">Điểm đánh giá (1-5 sao)</label>
+                                <div class="star-rating" role="radiogroup"
+                                     th:aria-labelledby="'ratingLabel-' + ${iv.id}">
+                                    <input type="radio" th:id="'star5-' + ${iv.id}" name="rating" value="5" required>
+                                    <label th:for="'star5-' + ${iv.id}" title="5 - Xuất sắc">★</label>
+                                    <input type="radio" th:id="'star4-' + ${iv.id}" name="rating" value="4" required>
+                                    <label th:for="'star4-' + ${iv.id}" title="4 - Khá">★</label>
+                                    <input type="radio" th:id="'star3-' + ${iv.id}" name="rating" value="3" required>
+                                    <label th:for="'star3-' + ${iv.id}" title="3 - Đạt">★</label>
+                                    <input type="radio" th:id="'star2-' + ${iv.id}" name="rating" value="2" required>
+                                    <label th:for="'star2-' + ${iv.id}" title="2 - Yếu">★</label>
+                                    <input type="radio" th:id="'star1-' + ${iv.id}" name="rating" value="1" required>
+                                    <label th:for="'star1-' + ${iv.id}" title="1 - Không đạt">★</label>
+                                </div>
+                            </div>
+                            <div class="form-group form-grid-full">
+                                <label th:for="'feedback-' + ${iv.id}">Nhận xét chi tiết</label>
+                                <textarea class="form-control" th:id="'feedback-' + ${iv.id}"
+                                          name="feedback" rows="4" required></textarea>
+                            </div>
+                            <p class="muted">Once submitted, your evaluation cannot be edited or withdrawn.</p>
+                            <button class="button button-primary" type="submit">Nộp đánh giá</button>
+                        </form>
                     </div>
                 </div>
             </section>
         </aside>
     </div>
 
-    <a class="text-link" th:href="@{/manage/jobs/{id}/applications(id=${app.jobPosting.id})}">Quay lại danh sách đơn ứng tuyển</a>
+    <a class="text-link" th:if="${canManage}"
+       th:href="@{/manage/jobs/{id}/applications(id=${app.jobPosting.id})}">Quay lại danh sách đơn ứng tuyển</a>
+    <a class="text-link" th:unless="${canManage}" th:href="@{/interviews}">Quay lại danh sách phỏng vấn của tôi</a>
 </main>
 <footer th:replace="~{layout/base :: footer}"></footer>
 </body>

@@ -1,7 +1,6 @@
 package com.recruit.recruitmentapplication.controller;
 
 import com.recruit.recruitmentapplication.dto.SessionUser;
-import com.recruit.recruitmentapplication.entity.Evaluation;
 import com.recruit.recruitmentapplication.entity.Interview;
 import com.recruit.recruitmentapplication.service.EvaluationService;
 import com.recruit.recruitmentapplication.util.SessionConstants;
@@ -15,7 +14,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-
+/**
+ * SCR-19: form đánh giá được gộp inline vào SCR-17 (application/detail.html) -
+ * route ở đây chỉ còn "My Interviews" (danh sách) và endpoint POST nộp đánh giá,
+ * không còn trang GET riêng để hiển thị form.
+ */
 @Controller
 @RequestMapping("/interviews")
 public class InterviewEvaluationController {
@@ -33,26 +36,12 @@ public class InterviewEvaluationController {
         return "interview/my-interviews";
     }
 
-    @GetMapping("/{id}/evaluate")
-    public String evaluateForm(@PathVariable Long id, Model model, HttpSession session) {
-        try {
-            SessionUser user = current(session);
-            Interview interview = evaluationService.findMyInterviewOrThrow(id, user);
-            Evaluation existing = evaluationService.findExistingEvaluation(id);
-            model.addAttribute("interview", interview);
-            model.addAttribute("existingEvaluation", existing);
-            return "interview/record-result-form";
-        } catch (IllegalArgumentException exception) {
-            return "redirect:/error/403";
-        }
-    }
-
-    // SCR-19: nộp xong quay về SCR-17 (Application Detail - Interviewer view) kèm flash message
+    // Nộp xong (hoặc lỗi) đều quay về SCR-17 (Application Detail), không còn trang riêng
     @PostMapping("/{id}/evaluate")
     public String submitEvaluation(@PathVariable Long id,
                                    @RequestParam Integer rating,
                                    @RequestParam String feedback,
-                                   Model model, HttpSession session, RedirectAttributes redirectAttributes) {
+                                   HttpSession session, RedirectAttributes redirectAttributes) {
         SessionUser user = current(session);
         try {
             Interview interview = evaluationService.submitEvaluation(id, user, rating, feedback);
@@ -61,10 +50,8 @@ public class InterviewEvaluationController {
         } catch (IllegalArgumentException exception) {
             try {
                 Interview interview = evaluationService.findMyInterviewOrThrow(id, user);
-                model.addAttribute("interview", interview);
-                model.addAttribute("existingEvaluation", evaluationService.findExistingEvaluation(id));
-                model.addAttribute("errorMessage", exception.getMessage());
-                return "interview/record-result-form";
+                redirectAttributes.addFlashAttribute("errorMessage", exception.getMessage());
+                return "redirect:/manage/applications/" + interview.getApplication().getId();
             } catch (IllegalArgumentException accessDenied) {
                 return "redirect:/error/403";
             }
