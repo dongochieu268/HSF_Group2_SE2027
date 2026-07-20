@@ -34,6 +34,13 @@ public class AuthInterceptor implements HandlerInterceptor {
             return false;
         }
 
+        // SCR-17: Interviewer được xem (read-only) chi tiết đơn ứng tuyển và tải CV
+        // cho application được assign; quyền chi tiết (đúng application hay không)
+        // do ApplicationService.findDetailForViewer kiểm tra ở tầng service.
+        if (isInterviewerApplicationReadRequest(request) && Role.INTERVIEWER.equals(loggedInUser.getRoleName())) {
+            return true;
+        }
+
         if (request.getRequestURI().startsWith(request.getContextPath() + "/manage")
                 && !canManageRecruitment(loggedInUser)) {
             response.sendRedirect(request.getContextPath() + "/error/403");
@@ -98,6 +105,15 @@ public class AuthInterceptor implements HandlerInterceptor {
         if (path.matches("/jobs/\\d+/apply")) return false;
         if (!"GET".equalsIgnoreCase(request.getMethod())) return true;
         return "/jobs/new".equals(path) || (path.startsWith("/jobs/") && path.endsWith("/edit"));
+    }
+
+    private boolean isInterviewerApplicationReadRequest(HttpServletRequest request) {
+        if (!"GET".equalsIgnoreCase(request.getMethod())) {
+            return false;
+        }
+        String path = request.getRequestURI().substring(request.getContextPath().length());
+        return path.matches("/manage/applications/\\d+")
+                || path.matches("/manage/applications/\\d+/documents/\\d+/download");
     }
 
     private boolean isPublicJobReadRequest(HttpServletRequest request) {
