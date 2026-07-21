@@ -30,7 +30,7 @@
                 <td th:text="${#temporals.format(iv.scheduledAt, 'dd/MM/yyyy HH:mm')}"></td>
                 <td th:text="${iv.interviewType}"></td>
                 <td><span class="badge" th:text="${iv.result}"></span></td>
-                <td><a class="button" th:href="@{/interviews/{id}/evaluate(id=${iv.id})}">Đánh giá</a></td>
+                <td><a class="button" th:href="@{/manage/applications/{id}(id=${iv.application.id})}">Đánh giá</a></td>
             </tr>
             </tbody>
         </table>
